@@ -1,0 +1,28 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Set up Norway Electricity Prices",
+        "description": "Select your electricity price area.",
+        "data": {
+          "price_area": "Price area"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "This price area is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Options",
+        "data": {
+          "vat": "Include VAT (25%)",
+          "cheap_hours": "Number of cheapest hours",
+          "expensive_hours": "Number of most expensive hours"
+        }
+      }
+    }
+  }
+}

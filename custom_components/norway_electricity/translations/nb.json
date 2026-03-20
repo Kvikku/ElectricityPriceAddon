@@ -1,0 +1,28 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Sett opp norske strømpriser",
+        "description": "Velg ditt prisområde.",
+        "data": {
+          "price_area": "Prisområde"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "Dette prisområdet er allerede konfigurert."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Innstillinger",
+        "data": {
+          "vat": "Inkluder MVA (25 %)",
+          "cheap_hours": "Antall billigste timer",
+          "expensive_hours": "Antall dyreste timer"
+        }
+      }
+    }
+  }
+}

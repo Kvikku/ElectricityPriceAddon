@@ -22,7 +22,33 @@ views:
     path: electricity
     icon: mdi:flash
     cards:
-      # ── Row 1: Current status glance ────────────────────────
+      # ── Row 1: Current price gauge + price level ────────────
+      - type: horizontal-stack
+        cards:
+          - type: gauge
+            entity: sensor.electricity_price_no3
+            name: Current Price
+            unit: NOK/kWh
+            needle: true
+            min: 0
+            max: 5
+            segments:
+              - from: 0
+                color: "#4CAF50"
+              - from: 0.5
+                color: "#8BC34A"
+              - from: 1.0
+                color: "#FFC107"
+              - from: 2.0
+                color: "#FF9800"
+              - from: 3.0
+                color: "#F44336"
+          - type: entity
+            entity: sensor.price_level_no3
+            name: Price Level
+            icon: mdi:speedometer
+
+      # ── Row 2: Current vs Next hour ─────────────────────────
       - type: horizontal-stack
         cards:
           - type: entity
@@ -33,12 +59,22 @@ views:
             entity: sensor.next_hour_price_no3
             name: Next Hour
             icon: mdi:flash-outline
-          - type: entity
-            entity: sensor.price_level_no3
-            name: Price Level
-            icon: mdi:speedometer
+          - type: markdown
+            title: Current vs Average
+            content: |
+              {% set current = states('sensor.electricity_price_no3') | float(0) %}
+              {% set avg = states('sensor.average_price_no3') | float(0) %}
+              {% set diff = current - avg %}
+              {% if diff > 0.01 %}
+              🔴 **{{ diff | round(2) }}** above avg
+              {% elif diff < -0.01 %}
+              🟢 **{{ (diff | abs) | round(2) }}** below avg
+              {% else %}
+              🟡 At average
+              {% endif %}
+              (avg: {{ avg | round(2) }} NOK/kWh)
 
-      # ── Row 2: Daily statistics ─────────────────────────────
+      # ── Row 3: Daily statistics ─────────────────────────────
       - type: horizontal-stack
         cards:
           - type: entity
@@ -54,7 +90,7 @@ views:
             name: Today Max
             icon: mdi:arrow-up-bold
 
-      # ── Row 3: Cheap / Expensive indicator ──────────────────
+      # ── Row 4: Cheap / Expensive indicator ──────────────────
       - type: horizontal-stack
         cards:
           - type: entity
@@ -66,7 +102,7 @@ views:
             name: Expensive Hour Now?
             icon: mdi:cash-plus
 
-      # ── Hourly price chart — Today ──────────────────────────
+      # ── Color-coded hourly price chart — Today ──────────────
       - type: custom:apexcharts-card
         header:
           title: Today's Electricity Prices — NO3
@@ -77,14 +113,48 @@ views:
         now:
           show: true
           label: Now
+        yaxis:
+          - min: 0
+            apex_config:
+              forceNiceScale: true
+        apex_config:
+          chart:
+            height: 300
+          tooltip:
+            y:
+              formatter: |
+                EVAL:function(value) {
+                  return value.toFixed(2) + ' NOK/kWh';
+                }
         series:
           - entity: sensor.electricity_price_no3
             data_generator: |
               const data = entity.attributes.raw_today || [];
               return data.map(e => [new Date(e.start).getTime(), e.price]);
             type: column
-            name: NOK/kWh
-            color: "#4CAF50"
+            name: Price
+            color_threshold:
+              - value: 0
+                color: "#4CAF50"
+              - value: 0.5
+                color: "#8BC34A"
+              - value: 1.0
+                color: "#FFC107"
+              - value: 2.0
+                color: "#FF9800"
+              - value: 3.0
+                color: "#F44336"
+          - entity: sensor.electricity_price_no3
+            data_generator: |
+              const data = entity.attributes.raw_today || [];
+              if (data.length === 0) return [];
+              const avg = data.reduce((sum, e) => sum + e.price, 0) / data.length;
+              return data.map(e => [new Date(e.start).getTime(), avg]);
+            name: Average
+            type: line
+            color: "#9E9E9E"
+            stroke_width: 2
+            extend_to: end
 
       # ── Hourly price chart — Today + Tomorrow ───────────────
       - type: custom:apexcharts-card
@@ -97,82 +167,115 @@ views:
         now:
           show: true
           label: Now
+        yaxis:
+          - min: 0
+            apex_config:
+              forceNiceScale: true
+        apex_config:
+          chart:
+            height: 300
+          tooltip:
+            y:
+              formatter: |
+                EVAL:function(value) {
+                  return value.toFixed(2) + ' NOK/kWh';
+                }
         series:
           - entity: sensor.electricity_price_no3
             data_generator: |
               const today = entity.attributes.raw_today || [];
               const tomorrow = entity.attributes.raw_tomorrow || [];
+              // Keep the card visible, but return no series data until tomorrow's prices are published
+              if (tomorrow.length === 0) return [];
               const all = [...today, ...tomorrow];
               return all.map(e => [new Date(e.start).getTime(), e.price]);
             type: column
-            name: NOK/kWh
-            color: "#2196F3"
+            name: Price
+            color_threshold:
+              - value: 0
+                color: "#42A5F5"
+              - value: 0.5
+                color: "#66BB6A"
+              - value: 1.0
+                color: "#FFA726"
+              - value: 2.0
+                color: "#FF7043"
+              - value: 3.0
+                color: "#EF5350"
 
       # ── Best consecutive charging window ────────────────────
       - type: markdown
-        title: Best Charging Window
+        title: "⚡ Best Charging Window"
         content: |
           {% set w = state_attr('binary_sensor.cheapest_hours_no3',
           'best_consecutive_window') %}
-
           {% if w %}
+          🕐 **{{ w.start | as_datetime | as_local
+              | strftime('%Y-%m-%d %H:%M') }}** →
+             **{{ w.end | as_datetime | as_local
+              | strftime('%Y-%m-%d %H:%M') }}**
+          💰 Avg price: **{{ w.average_price | round(3) }}** NOK/kWh
 
-          **Start:** {{ w.start }}
-
-          **End:** {{ w.end }}
-
-          **Avg price:** {{ w.average_price }} NOK/kWh
-
-          | Hour | Price |
-          |------|-------|
+          | Hour | Price (NOK/kWh) |
+          |:----:|:---------------:|
           {% for h in w.hours -%}
-          | {{ '%02d' | format(h.hour) }}:00 | {{ h.price }} |
+          | {{ '%02d' | format(h.hour) }}:00 | {{ h.price | round(3) }} |
           {% endfor %}
-
           {% else %}
-
           _No data available yet._
-
           {% endif %}
 
-      # ── Cheapest hours list ─────────────────────────────────
-      - type: markdown
-        title: Today's Cheapest Hours
-        content: |
-          {% set hours = state_attr('binary_sensor.cheapest_hours_no3',
-          'cheapest_hours') %}
+      # ── Cheapest & Expensive hours side-by-side ─────────────
+      - type: horizontal-stack
+        cards:
+          - type: markdown
+            title: "🟢 Today's Cheapest Hours"
+            content: |
+              {% set hours = state_attr('binary_sensor.cheapest_hours_no3',
+              'cheapest_hours') %}
+              {% if hours %}
+              | Hour | Price (NOK/kWh) |
+              |:----:|:---------------:|
+              {% for h in hours -%}
+              | {{ '%02d' | format(h.hour) }}:00 | {{ h.price | round(3) }} |
+              {% endfor %}
+              {% else %}
+              _No data available yet._
+              {% endif %}
+          - type: markdown
+            title: "🔴 Today's Most Expensive"
+            content: |
+              {% set hours = state_attr('binary_sensor.expensive_hours_no3',
+              'expensive_hours') %}
+              {% if hours %}
+              | Hour | Price (NOK/kWh) |
+              |:----:|:---------------:|
+              {% for h in hours -%}
+              | {{ '%02d' | format(h.hour) }}:00 | {{ h.price | round(3) }} |
+              {% endfor %}
+              {% else %}
+              _No data available yet._
+              {% endif %}
 
-          {% if hours %}
-
-          | Hour | Price (NOK/kWh) |
-          |------|-----------------|
-          {% for h in hours -%}
-          | {{ '%02d' | format(h.hour) }}:00 | {{ h.price }} |
-          {% endfor %}
-
-          {% else %}
-
-          _No data available yet._
-
-          {% endif %}
-
-      # ── Most expensive hours list ───────────────────────────
-      - type: markdown
-        title: Today's Most Expensive Hours
-        content: |
-          {% set hours = state_attr('binary_sensor.expensive_hours_no3',
-          'expensive_hours') %}
-
-          {% if hours %}
-
-          | Hour | Price (NOK/kWh) |
-          |------|-----------------|
-          {% for h in hours -%}
-          | {{ '%02d' | format(h.hour) }}:00 | {{ h.price }} |
-          {% endfor %}
-
-          {% else %}
-
-          _No data available yet._
-
-          {% endif %}
+      # ── All entities overview ───────────────────────────────
+      - type: entities
+        title: All Sensors
+        show_header_toggle: false
+        entities:
+          - entity: sensor.electricity_price_no3
+            name: Current Price
+          - entity: sensor.next_hour_price_no3
+            name: Next Hour
+          - entity: sensor.average_price_no3
+            name: Today's Average
+          - entity: sensor.min_price_no3
+            name: Today's Cheapest
+          - entity: sensor.max_price_no3
+            name: Today's Most Expensive
+          - entity: sensor.price_level_no3
+            name: Price Level
+          - type: divider
+          - entity: binary_sensor.cheapest_hours_no3
+            name: Cheap Now?
+          - entity: binary_sensor.expensive_hours_no3
+            name: Expensive Now?

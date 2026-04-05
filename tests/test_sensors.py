@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -103,12 +103,11 @@ def coordinator(price_data):
 
 class TestCurrentPriceSensor:
     def test_native_value(self, coordinator, price_data):
-        CurrentPriceSensor(coordinator, "NO1")
-        # Verify the underlying data returns the correct value for hour 10
-        now = datetime.fromisoformat("2026-03-20T10:30:00+01:00")
-        entry = price_data.current_price(now)
-        assert entry is not None
-        assert entry["price"] == 0.40
+        sensor = CurrentPriceSensor(coordinator, "NO1")
+        fixed_now = datetime.fromisoformat("2026-03-20T10:30:00+01:00")
+        with patch("custom_components.norway_electricity.coordinator.dt_util") as mock_dt:
+            mock_dt.now.return_value = fixed_now
+            assert sensor.native_value == 0.40
 
     def test_native_value_none_when_no_data(self):
         coord = _make_coordinator(None)

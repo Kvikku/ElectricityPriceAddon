@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -104,12 +104,20 @@ def entry():
 
 class TestCheapestHoursBinarySensor:
     def test_is_on_during_cheap_hour(self, coordinator, entry, price_data):
-        CheapestHoursBinarySensor(coordinator, entry, "NO1")
+        sensor = CheapestHoursBinarySensor(coordinator, entry, "NO1")
         # Hour 4 (0.05) is the cheapest — should be in top 6 cheapest
-        now = datetime.fromisoformat("2026-03-20T04:30:00+01:00")
-        current = price_data.current_price(now)
-        cheapest = price_data.cheapest_hours(6)
-        assert any(e["start"] == current["start"] for e in cheapest)
+        fixed_now = datetime.fromisoformat("2026-03-20T04:30:00+01:00")
+        with patch("custom_components.norway_electricity.coordinator.dt_util") as mock_dt:
+            mock_dt.now.return_value = fixed_now
+            assert sensor.is_on is True
+
+    def test_is_off_during_expensive_hour(self, coordinator, entry):
+        sensor = CheapestHoursBinarySensor(coordinator, entry, "NO1")
+        # Hour 19 (0.60) is the most expensive — should NOT be in top 6 cheapest
+        fixed_now = datetime.fromisoformat("2026-03-20T19:30:00+01:00")
+        with patch("custom_components.norway_electricity.coordinator.dt_util") as mock_dt:
+            mock_dt.now.return_value = fixed_now
+            assert sensor.is_on is False
 
     def test_is_on_none_when_no_data(self, entry):
         coord = _make_coordinator(None)
@@ -145,12 +153,20 @@ class TestCheapestHoursBinarySensor:
 
 class TestExpensiveHoursBinarySensor:
     def test_is_on_during_expensive_hour(self, coordinator, entry, price_data):
-        ExpensiveHoursBinarySensor(coordinator, entry, "NO1")
+        sensor = ExpensiveHoursBinarySensor(coordinator, entry, "NO1")
         # Hour 19 (0.60) is the most expensive — should be in top 6 expensive
-        now = datetime.fromisoformat("2026-03-20T19:30:00+01:00")
-        current = price_data.current_price(now)
-        expensive = price_data.most_expensive_hours(6)
-        assert any(e["start"] == current["start"] for e in expensive)
+        fixed_now = datetime.fromisoformat("2026-03-20T19:30:00+01:00")
+        with patch("custom_components.norway_electricity.coordinator.dt_util") as mock_dt:
+            mock_dt.now.return_value = fixed_now
+            assert sensor.is_on is True
+
+    def test_is_off_during_cheap_hour(self, coordinator, entry):
+        sensor = ExpensiveHoursBinarySensor(coordinator, entry, "NO1")
+        # Hour 4 (0.05) is the cheapest — should NOT be in top 6 expensive
+        fixed_now = datetime.fromisoformat("2026-03-20T04:30:00+01:00")
+        with patch("custom_components.norway_electricity.coordinator.dt_util") as mock_dt:
+            mock_dt.now.return_value = fixed_now
+            assert sensor.is_on is False
 
     def test_is_on_none_when_no_data(self, entry):
         coord = _make_coordinator(None)

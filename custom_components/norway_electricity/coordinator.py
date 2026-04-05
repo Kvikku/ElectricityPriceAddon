@@ -203,7 +203,7 @@ class ElectricityPriceCoordinator(DataUpdateCoordinator[ElectricityPriceData]):
                     _LOGGER.warning("Unexpected status %s fetching %s", response.status, url)
                     return None
                 raw = await response.json()
-        except (TimeoutError, Exception) as err:  # noqa: BLE001
+        except (aiohttp.ClientError, TimeoutError) as err:
             _LOGGER.warning("Error fetching %s: %s", url, err)
             return None
 

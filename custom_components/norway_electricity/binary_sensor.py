@@ -3,11 +3,10 @@
 from __future__ import annotations
 
 from homeassistant.components.binary_sensor import (
-    BinarySensorDeviceClass,
     BinarySensorEntity,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
@@ -40,9 +39,7 @@ async def async_setup_entry(
     )
 
 
-class CheapestHoursBinarySensor(
-    CoordinatorEntity[ElectricityPriceCoordinator], BinarySensorEntity
-):
+class CheapestHoursBinarySensor(CoordinatorEntity[ElectricityPriceCoordinator], BinarySensorEntity):
     """Binary sensor that is ON during the cheapest hours of the day."""
 
     _attr_has_entity_name = True
@@ -99,20 +96,14 @@ class CheapestHoursBinarySensor(
             attrs["best_consecutive_window"] = {
                 "start": window[0]["start"].isoformat(),
                 "end": window[-1]["end"].isoformat(),
-                "hours": [
-                    {"hour": e["hour"], "price": e["price"]} for e in window
-                ],
-                "average_price": round(
-                    sum(e["price"] for e in window) / len(window), 4
-                ),
+                "hours": [{"hour": e["hour"], "price": e["price"]} for e in window],
+                "average_price": round(sum(e["price"] for e in window) / len(window), 4),
             }
 
         return attrs
 
 
-class ExpensiveHoursBinarySensor(
-    CoordinatorEntity[ElectricityPriceCoordinator], BinarySensorEntity
-):
+class ExpensiveHoursBinarySensor(CoordinatorEntity[ElectricityPriceCoordinator], BinarySensorEntity):
     """Binary sensor that is ON during the most expensive hours of the day."""
 
     _attr_has_entity_name = True

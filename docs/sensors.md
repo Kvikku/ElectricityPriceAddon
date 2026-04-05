@@ -4,7 +4,8 @@ Complete reference for all entities created by the **Norway Electricity
 Prices** integration.
 
 Each configured price area (NO1–NO5) creates its own set of entities. Entity
-IDs include the area code as a suffix (e.g., `sensor.electricity_price_no5`).
+IDs use the **lowercase** area code as a suffix (e.g., `no1`, `no2`, `no3`,
+`no4`, `no5`). Examples below use `no5` — replace with your area.
 
 ---
 
@@ -14,7 +15,7 @@ IDs include the area code as a suffix (e.g., `sensor.electricity_price_no5`).
 
 | | |
 |---|---|
-| **Entity** | `sensor.electricity_price_{area}` |
+| **Entity** | `sensor.electricity_price_no5` |
 | **Type** | Sensor |
 | **Device class** | `monetary` |
 | **Unit** | NOK/kWh |
@@ -49,7 +50,7 @@ Each entry in `raw_today` / `raw_tomorrow`:
 
 | | |
 |---|---|
-| **Entity** | `sensor.next_hour_price_{area}` |
+| **Entity** | `sensor.next_hour_price_no5` |
 | **Type** | Sensor |
 | **Device class** | `monetary` |
 | **Unit** | NOK/kWh |
@@ -70,7 +71,7 @@ Each entry in `raw_today` / `raw_tomorrow`:
 
 | | |
 |---|---|
-| **Entity** | `sensor.average_price_{area}` |
+| **Entity** | `sensor.average_price_no5` |
 | **Type** | Sensor |
 | **Device class** | `monetary` |
 | **Unit** | NOK/kWh |
@@ -85,7 +86,7 @@ No additional attributes.
 
 | | |
 |---|---|
-| **Entity** | `sensor.min_price_{area}` |
+| **Entity** | `sensor.min_price_no5` |
 | **Type** | Sensor |
 | **Device class** | `monetary` |
 | **Unit** | NOK/kWh |
@@ -105,7 +106,7 @@ No additional attributes.
 
 | | |
 |---|---|
-| **Entity** | `sensor.max_price_{area}` |
+| **Entity** | `sensor.max_price_no5` |
 | **Type** | Sensor |
 | **Device class** | `monetary` |
 | **Unit** | NOK/kWh |
@@ -125,7 +126,7 @@ No additional attributes.
 
 | | |
 |---|---|
-| **Entity** | `sensor.price_level_{area}` |
+| **Entity** | `sensor.price_level_no5` |
 | **Type** | Sensor |
 | **Icon** | `mdi:speedometer` |
 | **State** | Categorical price level |
@@ -158,7 +159,7 @@ prices by percentile:
 
 | | |
 |---|---|
-| **Entity** | `binary_sensor.cheapest_hours_{area}` |
+| **Entity** | `binary_sensor.cheapest_hours_no5` |
 | **Type** | Binary sensor |
 | **Icon** | `mdi:cash-minus` |
 | **State** | ON when the current hour is among the N cheapest today |
@@ -193,7 +194,7 @@ prices by percentile:
 
 | | |
 |---|---|
-| **Entity** | `binary_sensor.expensive_hours_{area}` |
+| **Entity** | `binary_sensor.expensive_hours_no5` |
 | **Type** | Binary sensor |
 | **Icon** | `mdi:cash-plus` |
 | **State** | ON when the current hour is among the N most expensive today |

@@ -25,6 +25,7 @@ five Norwegian price areas (NO1–NO5).
 - [Data Source](#data-source)
 - [Documentation](#documentation)
 - [Contributing](#contributing)
+- [Troubleshooting](#troubleshooting)
 - [License](#license)
 
 ---
@@ -106,18 +107,19 @@ After adding the integration, click **Configure** to adjust:
 
 ## Sensors & Entities
 
-Each price area creates **8 entities**:
+Each price area creates **8 entities**. Replace `{area}` with the
+**lowercase** area code: `no1`, `no2`, `no3`, `no4`, or `no5`.
 
 | Entity | Type | State | Key Attributes |
 |--------|------|-------|----------------|
-| `sensor.electricity_price_{area}` | Sensor | Current NOK/kWh | `price_eur`, `hour`, `raw_today`, `raw_tomorrow` |
-| `sensor.next_hour_price_{area}` | Sensor | Next hour NOK/kWh | `price_eur`, `hour` |
-| `sensor.average_price_{area}` | Sensor | Today's average | — |
-| `sensor.min_price_{area}` | Sensor | Today's lowest | `hour` of cheapest |
-| `sensor.max_price_{area}` | Sensor | Today's highest | `hour` of most expensive |
-| `sensor.price_level_{area}` | Sensor | Category string | — |
-| `binary_sensor.cheapest_hours_{area}` | Binary | ON if cheap now | `cheapest_hours`, `best_consecutive_window` |
-| `binary_sensor.expensive_hours_{area}` | Binary | ON if expensive now | `expensive_hours` |
+| `sensor.electricity_price_no5` | Sensor | Current NOK/kWh | `price_eur`, `hour`, `raw_today`, `raw_tomorrow` |
+| `sensor.next_hour_price_no5` | Sensor | Next hour NOK/kWh | `price_eur`, `hour` |
+| `sensor.average_price_no5` | Sensor | Today's average | — |
+| `sensor.min_price_no5` | Sensor | Today's lowest | `hour` of cheapest |
+| `sensor.max_price_no5` | Sensor | Today's highest | `hour` of most expensive |
+| `sensor.price_level_no5` | Sensor | Category string | — |
+| `binary_sensor.cheapest_hours_no5` | Binary | ON if cheap now | `cheapest_hours`, `best_consecutive_window` |
+| `binary_sensor.expensive_hours_no5` | Binary | ON if expensive now | `expensive_hours` |
 
 📖 **Full details:** [Sensor Reference](docs/sensors.md)
 

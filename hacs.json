@@ -1,4 +1,6 @@
 {
   "name": "Norway Electricity Prices",
-  "render_readme": true
+  "render_readme": true,
+  "homeassistant": "2024.1.0",
+  "country": ["NO"]
 }

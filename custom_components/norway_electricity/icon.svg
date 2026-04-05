@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <clipPath id="bg">
+      <rect width="512" height="512" rx="80"/>
+    </clipPath>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="3" stdDeviation="6" flood-color="#000" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <g clip-path="url(#bg)">
+    <!-- Norwegian flag — red background -->
+    <rect width="512" height="512" fill="#EF2B2D"/>
+
+    <!-- White Nordic cross -->
+    <rect y="218" width="512" height="76" fill="#FFF"/>
+    <rect x="148" width="76" height="512" fill="#FFF"/>
+
+    <!-- Blue Nordic cross (inset) -->
+    <rect y="234" width="512" height="44" fill="#002868"/>
+    <rect x="164" width="44" height="512" fill="#002868"/>
+
+    <!-- Lightning bolt — white fill with blue outline -->
+    <polygon
+      points="276,20 146,260 256,260 196,492 366,220 256,220"
+      fill="#FFF"
+      stroke="#002868"
+      stroke-width="10"
+      stroke-linejoin="round"
+      filter="url(#shadow)"
+    />
+  </g>
+</svg>

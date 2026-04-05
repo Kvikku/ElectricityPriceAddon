@@ -128,7 +128,17 @@ Each price area creates **8 entities**. Replace `{area}` with the
 
 ## Example Dashboard
 
-A full example dashboard is available in [`examples/dashboard.yaml`](examples/dashboard.yaml). It includes current price cards, daily statistics, cheap/expensive hour indicators, hourly price charts, and charging-window tables — all configured for **NO3** (Trondheim / Midt-Norge). To use a different region, replace every `no3` with your area code (e.g. `no1`, `no5`).
+A full example dashboard is available in [`examples/dashboard.yaml`](examples/dashboard.yaml), configured for **NO3** (Trondheim / Midt-Norge). To use a different region, replace every `no3` with your area code (e.g. `no1`, `no5`).
+
+**Dashboard highlights:**
+
+- **Gauge card** — current price shown as a colour-coded needle gauge
+- **Current vs Average** — at-a-glance indicator showing if the price is above or below today's average
+- **Colour-coded charts** — bar colours shift from green → yellow → orange → red as price rises, with an average-price reference line
+- **48-hour chart** — today + tomorrow view (auto-hides when tomorrow's data isn't available yet)
+- **Side-by-side cheapest / most expensive hours** — quick comparison tables
+- **Best charging window** — optimal consecutive cheap-hour block with times and average price
+- **All sensors** — compact entities card listing every sensor and binary sensor
 
 > **Prerequisite:** Install [apexcharts-card](https://github.com/RomRider/apexcharts-card) via HACS for the chart cards.
 
@@ -136,7 +146,7 @@ A full example dashboard is available in [`examples/dashboard.yaml`](examples/da
 
 ## Lovelace Examples
 
-### Hourly Price Bar Chart
+### Colour-Coded Hourly Price Bar Chart
 
 Requires [apexcharts-card](https://github.com/RomRider/apexcharts-card)
 (install via HACS):
@@ -149,6 +159,9 @@ header:
 graph_span: 24h
 span:
   start: day
+now:
+  show: true
+  label: Now
 series:
   - entity: sensor.electricity_price_no5
     data_generator: |
@@ -156,7 +169,17 @@ series:
       return data.map(e => [new Date(e.start).getTime(), e.price]);
     type: column
     name: NOK/kWh
-    color: "#4CAF50"
+    color_threshold:
+      - value: 0
+        color: "#4CAF50"
+      - value: 0.5
+        color: "#8BC34A"
+      - value: 1.0
+        color: "#FFC107"
+      - value: 2.0
+        color: "#FF9800"
+      - value: 3.0
+        color: "#F44336"
 ```
 
 ### Today + Tomorrow (48h View)
@@ -169,16 +192,49 @@ header:
 graph_span: 48h
 span:
   start: day
+now:
+  show: true
+  label: Now
 series:
   - entity: sensor.electricity_price_no5
     data_generator: |
       const today = entity.attributes.raw_today || [];
       const tomorrow = entity.attributes.raw_tomorrow || [];
+      if (tomorrow.length === 0) return [];
       const all = [...today, ...tomorrow];
       return all.map(e => [new Date(e.start).getTime(), e.price]);
     type: column
     name: NOK/kWh
-    color: "#2196F3"
+    color_threshold:
+      - value: 0
+        color: "#42A5F5"
+      - value: 0.5
+        color: "#66BB6A"
+      - value: 1.0
+        color: "#FFA726"
+      - value: 2.0
+        color: "#FF7043"
+      - value: 3.0
+        color: "#EF5350"
+```
+
+### Current vs Average Price
+
+```yaml
+type: markdown
+title: Current vs Average
+content: |
+  {% set current = states('sensor.electricity_price_no5') | float(0) %}
+  {% set avg = states('sensor.average_price_no5') | float(0) %}
+  {% set diff = current - avg %}
+  {% if diff > 0.01 %}
+  🔴 **{{ diff | round(2) }}** above avg
+  {% elif diff < -0.01 %}
+  🟢 **{{ (diff | abs) | round(2) }}** below avg
+  {% else %}
+  🟡 At average
+  {% endif %}
+  (avg: {{ avg | round(2) }} NOK/kWh)
 ```
 
 📖 **More examples:** [Automation & Lovelace Examples](docs/automations.md)

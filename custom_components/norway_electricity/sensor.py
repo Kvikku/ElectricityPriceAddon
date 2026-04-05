@@ -9,10 +9,11 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import CONF_AREA, CURRENCY_NOK, DOMAIN
+from .const import CONF_AREA, CURRENCY_NOK, DOMAIN, PRICE_AREAS, serialize_entry
 from .coordinator import ElectricityPriceCoordinator, ElectricityPriceData
 
 
@@ -54,6 +55,13 @@ class ElectricityPriceSensorBase(CoordinatorEntity[ElectricityPriceCoordinator],
         self._attr_unique_id = f"{DOMAIN}_{area}_{key}"
         self._attr_translation_key = key
         self._attr_name = f"{name} ({area})"
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, area)},
+            name=f"Electricity Prices {area}",
+            manufacturer="hvakosterstrommen.no",
+            model=PRICE_AREAS.get(area, area),
+            entry_type=DeviceEntryType.SERVICE,
+        )
 
     @property
     def data(self) -> ElectricityPriceData | None:
@@ -64,29 +72,13 @@ class ElectricityPriceSensorBase(CoordinatorEntity[ElectricityPriceCoordinator],
         """Serializable list of today's prices for graph cards."""
         if not self.data:
             return []
-        return [
-            {
-                "start": e["start"].isoformat(),
-                "end": e["end"].isoformat(),
-                "price": e["price"],
-                "hour": e["hour"],
-            }
-            for e in self.data.today
-        ]
+        return [serialize_entry(e) for e in self.data.today]
 
     def _raw_tomorrow_attr(self) -> list[dict] | None:
         """Serializable list of tomorrow's prices."""
         if not self.data or not self.data.tomorrow:
             return None
-        return [
-            {
-                "start": e["start"].isoformat(),
-                "end": e["end"].isoformat(),
-                "price": e["price"],
-                "hour": e["hour"],
-            }
-            for e in self.data.tomorrow
-        ]
+        return [serialize_entry(e) for e in self.data.tomorrow]
 
 
 class CurrentPriceSensor(ElectricityPriceSensorBase):
@@ -97,7 +89,7 @@ class CurrentPriceSensor(ElectricityPriceSensorBase):
     _attr_native_unit_of_measurement = CURRENCY_NOK
     _attr_icon = "mdi:flash"
 
-    def __init__(self, coordinator, area) -> None:
+    def __init__(self, coordinator: ElectricityPriceCoordinator, area: str) -> None:
         super().__init__(coordinator, area, "current_price", "Electricity Price")
 
     @callback
@@ -134,7 +126,7 @@ class NextHourPriceSensor(ElectricityPriceSensorBase):
     _attr_native_unit_of_measurement = CURRENCY_NOK
     _attr_icon = "mdi:flash-outline"
 
-    def __init__(self, coordinator, area) -> None:
+    def __init__(self, coordinator: ElectricityPriceCoordinator, area: str) -> None:
         super().__init__(coordinator, area, "next_hour_price", "Next Hour Price")
 
     @property
@@ -166,7 +158,7 @@ class AveragePriceSensor(ElectricityPriceSensorBase):
     _attr_native_unit_of_measurement = CURRENCY_NOK
     _attr_icon = "mdi:chart-line"
 
-    def __init__(self, coordinator, area) -> None:
+    def __init__(self, coordinator: ElectricityPriceCoordinator, area: str) -> None:
         super().__init__(coordinator, area, "average_price", "Average Price")
 
     @property
@@ -184,7 +176,7 @@ class MinPriceSensor(ElectricityPriceSensorBase):
     _attr_native_unit_of_measurement = CURRENCY_NOK
     _attr_icon = "mdi:arrow-down-bold"
 
-    def __init__(self, coordinator, area) -> None:
+    def __init__(self, coordinator: ElectricityPriceCoordinator, area: str) -> None:
         super().__init__(coordinator, area, "min_price", "Min Price")
 
     @property
@@ -215,7 +207,7 @@ class MaxPriceSensor(ElectricityPriceSensorBase):
     _attr_native_unit_of_measurement = CURRENCY_NOK
     _attr_icon = "mdi:arrow-up-bold"
 
-    def __init__(self, coordinator, area) -> None:
+    def __init__(self, coordinator: ElectricityPriceCoordinator, area: str) -> None:
         super().__init__(coordinator, area, "max_price", "Max Price")
 
     @property
@@ -243,7 +235,7 @@ class PriceLevelSensor(ElectricityPriceSensorBase):
 
     _attr_icon = "mdi:speedometer"
 
-    def __init__(self, coordinator, area) -> None:
+    def __init__(self, coordinator: ElectricityPriceCoordinator, area: str) -> None:
         super().__init__(coordinator, area, "price_level", "Price Level")
 
     @property

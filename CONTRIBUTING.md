@@ -67,6 +67,10 @@ Use clear, descriptive commit messages:
 2. Translate all values (keep the keys unchanged).
 3. Submit a pull request.
 
+> **Note:** `strings.json` is the source of truth for English strings and
+> `translations/en.json` must always be an identical copy. If you change one,
+> update the other to match.
+
 ## Reporting Issues
 
 When reporting a bug, please include:

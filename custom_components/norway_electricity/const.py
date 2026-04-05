@@ -1,5 +1,10 @@
 """Constants for the Norway Electricity Prices integration."""
 
+from __future__ import annotations
+
+from datetime import datetime
+from typing import TypedDict
+
 DOMAIN = "norway_electricity"
 
 API_URL_TEMPLATE = "https://www.hvakosterstrommen.no/api/v1/prices/{year}/{month}-{day}_{area}.json"
@@ -26,3 +31,24 @@ DEFAULT_EXPENSIVE_HOURS = 6
 CURRENCY_NOK = "NOK/kWh"
 
 EVENT_TOMORROW_AVAILABLE = f"{DOMAIN}_tomorrow_available"
+
+
+class PriceEntry(TypedDict):
+    """A single hourly price entry."""
+
+    start: datetime
+    end: datetime
+    price: float
+    price_eur: float
+    hour: int
+
+
+def serialize_entry(entry: PriceEntry) -> dict[str, str | float | int]:
+    """Convert a PriceEntry to a JSON-serializable dict."""
+    return {
+        "start": entry["start"].isoformat(),
+        "end": entry["end"].isoformat(),
+        "price": entry["price"],
+        "price_eur": entry["price_eur"],
+        "hour": entry["hour"],
+    }

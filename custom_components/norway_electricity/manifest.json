@@ -1,7 +1,7 @@
 {
   "domain": "norway_electricity",
   "name": "Norway Electricity Prices",
-  "codeowners": [],
+  "codeowners": ["@Kvikku"],
   "config_flow": true,
   "dependencies": [],
   "documentation": "https://github.com/Kvikku/ElectricityPriceAddon",

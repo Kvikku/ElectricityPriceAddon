@@ -135,7 +135,7 @@ A full example dashboard is available in [`examples/dashboard.yaml`](examples/da
 - **Gauge card** — current price shown as a colour-coded needle gauge
 - **Current vs Average** — at-a-glance indicator showing if the price is above or below today's average
 - **Colour-coded charts** — bar colours shift from green → yellow → orange → red as price rises, with an average-price reference line
-- **48-hour chart** — today + tomorrow view (auto-hides when tomorrow's data isn't available yet)
+- **48-hour chart** — today + tomorrow view (shows no data until tomorrow's prices are published)
 - **Side-by-side cheapest / most expensive hours** — quick comparison tables
 - **Best charging window** — optimal consecutive cheap-hour block with times and average price
 - **All sensors** — compact entities card listing every sensor and binary sensor

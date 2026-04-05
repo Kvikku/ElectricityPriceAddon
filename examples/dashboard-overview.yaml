@@ -1,0 +1,127 @@
+# ─────────────────────────────────────────────────────────────
+# Overview Dashboard — Norway Electricity Prices
+# Region: NO3 (Trondheim / Midt-Norge)
+# ─────────────────────────────────────────────────────────────
+#
+# A daily-overview dashboard with a colour-coded gauge, daily
+# statistics, price-level context, and a "current vs average"
+# comparison.  Uses only built-in Home Assistant cards — no
+# extra HACS frontend components required.
+#
+# Usage:
+#   1. In HA go to Settings → Dashboards → Add Dashboard
+#   2. Open the new dashboard, click ⋮ → Edit Dashboard
+#      → Raw configuration editor
+#   3. Paste the contents below and save
+#
+# To use a different region, replace every occurrence of "no3"
+# with your area code (no1, no2, no4, or no5).
+# ─────────────────────────────────────────────────────────────
+
+views:
+  - title: Electricity Overview
+    path: electricity
+    icon: mdi:flash
+    cards:
+      # ── Gauge — current price with colour segments ─────────
+      - type: gauge
+        entity: sensor.electricity_price_no3
+        name: Current Price
+        unit: NOK/kWh
+        needle: true
+        min: 0
+        max: 5
+        segments:
+          - from: 0
+            color: "#4CAF50"
+          - from: 0.5
+            color: "#8BC34A"
+          - from: 1.0
+            color: "#FFC107"
+          - from: 2.0
+            color: "#FF9800"
+          - from: 3.0
+            color: "#F44336"
+
+      # ── Current & Next Hour side-by-side ───────────────────
+      - type: horizontal-stack
+        cards:
+          - type: entity
+            entity: sensor.electricity_price_no3
+            name: Current Price
+            icon: mdi:flash
+          - type: entity
+            entity: sensor.next_hour_price_no3
+            name: Next Hour
+            icon: mdi:flash-outline
+          - type: entity
+            entity: sensor.price_level_no3
+            name: Price Level
+            icon: mdi:speedometer
+
+      # ── Daily statistics ───────────────────────────────────
+      - type: horizontal-stack
+        cards:
+          - type: entity
+            entity: sensor.average_price_no3
+            name: Today Avg
+            icon: mdi:chart-line
+          - type: entity
+            entity: sensor.min_price_no3
+            name: Today Min
+            icon: mdi:arrow-down-bold
+          - type: entity
+            entity: sensor.max_price_no3
+            name: Today Max
+            icon: mdi:arrow-up-bold
+
+      # ── Cheap / expensive indicators ───────────────────────
+      - type: horizontal-stack
+        cards:
+          - type: entity
+            entity: binary_sensor.cheapest_hours_no3
+            name: Cheap Hour Now?
+            icon: mdi:cash-minus
+          - type: entity
+            entity: binary_sensor.expensive_hours_no3
+            name: Expensive Hour Now?
+            icon: mdi:cash-plus
+
+      # ── Current vs Average — markdown comparison ───────────
+      - type: markdown
+        title: Current vs Average
+        content: |
+          {% set current = states('sensor.electricity_price_no3') | float(0) %}
+          {% set avg = states('sensor.average_price_no3') | float(0) %}
+          {% set diff = current - avg %}
+          {% if diff > 0.01 %}
+          🔴 **{{ diff | round(2) }} NOK/kWh** above today's average
+          {% elif diff < -0.01 %}
+          🟢 **{{ (diff | abs) | round(2) }} NOK/kWh** below today's average
+          {% else %}
+          🟡 Right at today's average
+          {% endif %}
+          (Average: {{ avg | round(2) }} NOK/kWh)
+
+      # ── All sensors list ───────────────────────────────────
+      - type: entities
+        title: All Sensors
+        show_header_toggle: false
+        entities:
+          - entity: sensor.electricity_price_no3
+            name: Current Price
+          - entity: sensor.next_hour_price_no3
+            name: Next Hour
+          - entity: sensor.average_price_no3
+            name: Today's Average
+          - entity: sensor.min_price_no3
+            name: Today's Cheapest
+          - entity: sensor.max_price_no3
+            name: Today's Most Expensive
+          - entity: sensor.price_level_no3
+            name: Price Level
+          - type: divider
+          - entity: binary_sensor.cheapest_hours_no3
+            name: Cheap Now?
+          - entity: binary_sensor.expensive_hours_no3
+            name: Expensive Now?

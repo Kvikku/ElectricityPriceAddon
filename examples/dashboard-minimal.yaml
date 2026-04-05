@@ -1,0 +1,53 @@
+# ─────────────────────────────────────────────────────────────
+# Minimal Dashboard — Norway Electricity Prices
+# Region: NO3 (Trondheim / Midt-Norge)
+# ─────────────────────────────────────────────────────────────
+#
+# A subtle, low-key dashboard that gives you the essentials at
+# a glance.  Uses only built-in Home Assistant cards — no extra
+# HACS frontend components required.
+#
+# Usage:
+#   1. In HA go to Settings → Dashboards → Add Dashboard
+#   2. Open the new dashboard, click ⋮ → Edit Dashboard
+#      → Raw configuration editor
+#   3. Paste the contents below and save
+#
+# To use a different region, replace every occurrence of "no3"
+# with your area code (no1, no2, no4, or no5).
+# ─────────────────────────────────────────────────────────────
+
+views:
+  - title: Electricity
+    path: electricity
+    icon: mdi:flash
+    cards:
+      # ── Glance card — all key values in one row ────────────
+      - type: glance
+        title: Electricity Prices — NO3
+        show_state: true
+        entities:
+          - entity: sensor.electricity_price_no3
+            name: Now
+            icon: mdi:flash
+          - entity: sensor.next_hour_price_no3
+            name: Next Hour
+            icon: mdi:flash-outline
+          - entity: sensor.price_level_no3
+            name: Level
+            icon: mdi:speedometer
+          - entity: sensor.average_price_no3
+            name: Average
+            icon: mdi:chart-line
+
+      # ── Cheap / expensive indicator ────────────────────────
+      - type: glance
+        title: Right Now
+        show_state: true
+        entities:
+          - entity: binary_sensor.cheapest_hours_no3
+            name: Cheap Hour?
+            icon: mdi:cash-minus
+          - entity: binary_sensor.expensive_hours_no3
+            name: Expensive Hour?
+            icon: mdi:cash-plus

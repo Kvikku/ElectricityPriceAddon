@@ -126,21 +126,20 @@ Each price area creates **8 entities**. Replace `{area}` with the
 
 ---
 
-## Example Dashboard
+## Example Dashboards
 
-A full example dashboard is available in [`examples/dashboard.yaml`](examples/dashboard.yaml), configured for **NO3** (Trondheim / Midt-Norge). To use a different region, replace every `no3` with your area code (e.g. `no1`, `no5`).
+Several ready-to-use dashboards are available in the [`examples/`](examples/) folder, ranging from simple to complex. All examples use **NO3** (Trondheim / Midt-Norge) — replace every `no3` with your area code (e.g. `no1`, `no5`).
 
-**Dashboard highlights:**
+| Dashboard | Complexity | HACS extras? | Description |
+|-----------|:----------:|:------------:|-------------|
+| [`dashboard-minimal.yaml`](examples/dashboard-minimal.yaml) | 🟢 Simple | None | Two glance cards — current price, next hour, level, and cheap/expensive status. Great for a sidebar panel. |
+| [`dashboard-overview.yaml`](examples/dashboard-overview.yaml) | 🟡 Moderate | None | Full-page daily overview with gauge, daily stats, price comparison, and all sensors list. |
+| [`dashboard.yaml`](examples/dashboard.yaml) | 🟠 Detailed | [apexcharts-card] | Comprehensive reference dashboard with charts, tables, and all features. |
+| [`dashboard-ev-charging.yaml`](examples/dashboard-ev-charging.yaml) | 🔴 Advanced | [apexcharts-card] | Energy-optimisation dashboard for EV owners — charging window, cheapest/expensive tables, and 48 h forecast. |
 
-- **Gauge card** — current price shown as a colour-coded needle gauge
-- **Current vs Average** — at-a-glance indicator showing if the price is above or below today's average
-- **Colour-coded charts** — bar colours shift from green → yellow → orange → red as price rises, with an average-price reference line
-- **48-hour chart** — today + tomorrow view (shows no data until tomorrow's prices are published)
-- **Side-by-side cheapest / most expensive hours** — quick comparison tables
-- **Best charging window** — optimal consecutive cheap-hour block with times and average price
-- **All sensors** — compact entities card listing every sensor and binary sensor
+[apexcharts-card]: https://github.com/RomRider/apexcharts-card
 
-> **Prerequisite:** Install [apexcharts-card](https://github.com/RomRider/apexcharts-card) via HACS for the chart cards.
+> 📖 **Full guide:** See [`examples/README.md`](examples/README.md) for installation instructions and customisation ideas.
 
 ---
 

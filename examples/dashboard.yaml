@@ -189,6 +189,7 @@ views:
               data_generator: |
                 const today = entity.attributes.raw_today || [];
                 const tomorrow = entity.attributes.raw_tomorrow || [];
+                // Hide the chart entirely until tomorrow's data is published
                 if (tomorrow.length === 0) return [];
                 const all = [...today, ...tomorrow];
                 return all.map(e => [new Date(e.start).getTime(), e.price]);
@@ -213,7 +214,10 @@ views:
           {% set w = state_attr('binary_sensor.cheapest_hours_no3',
           'best_consecutive_window') %}
           {% if w %}
-          🕐 **{{ w.start[:16] }}** → **{{ w.end[:16] }}**
+          🕐 **{{ w.start | as_datetime | as_local
+              | string | truncate(16, True, '') }}** →
+             **{{ w.end | as_datetime | as_local
+              | string | truncate(16, True, '') }}**
           💰 Avg price: **{{ w.average_price | round(3) }}** NOK/kWh
 
           | Hour | Price (NOK/kWh) |

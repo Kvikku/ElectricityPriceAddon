@@ -111,7 +111,7 @@ views:
       # ── Best consecutive charging window ────────────────────
       - type: markdown
         title: Best Charging Window
-        content: >
+        content: |
           {% set w = state_attr('binary_sensor.cheapest_hours_no3',
           'best_consecutive_window') %}
 
@@ -138,7 +138,7 @@ views:
       # ── Cheapest hours list ─────────────────────────────────
       - type: markdown
         title: Today's Cheapest Hours
-        content: >
+        content: |
           {% set hours = state_attr('binary_sensor.cheapest_hours_no3',
           'cheapest_hours') %}
 
@@ -159,7 +159,7 @@ views:
       # ── Most expensive hours list ───────────────────────────
       - type: markdown
         title: Today's Most Expensive Hours
-        content: >
+        content: |
           {% set hours = state_attr('binary_sensor.expensive_hours_no3',
           'expensive_hours') %}
 

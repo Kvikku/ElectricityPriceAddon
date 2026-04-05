@@ -7,7 +7,6 @@ from datetime import datetime, timedelta
 from typing import Any
 
 import aiohttp
-
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
@@ -120,10 +119,7 @@ class ElectricityPriceData:
         for i in range(len(prices_sorted_time) - hours + 1):
             window = prices_sorted_time[i : i + hours]
             # Verify they are actually consecutive hours
-            is_consecutive = all(
-                window[j + 1]["start"] == window[j]["end"]
-                for j in range(len(window) - 1)
-            )
+            is_consecutive = all(window[j + 1]["start"] == window[j]["end"] for j in range(len(window) - 1))
             if not is_consecutive:
                 continue
             cost = sum(e["price"] for e in window)
@@ -163,9 +159,7 @@ class ElectricityPriceCoordinator(DataUpdateCoordinator[ElectricityPriceData]):
 
         today_prices = await self._fetch_prices(today)
         if not today_prices:
-            raise UpdateFailed(
-                f"Failed to fetch electricity prices for {today} area {self.area}"
-            )
+            raise UpdateFailed(f"Failed to fetch electricity prices for {today} area {self.area}")
 
         tomorrow_prices = await self._fetch_prices(tomorrow)
 
@@ -196,9 +190,7 @@ class ElectricityPriceCoordinator(DataUpdateCoordinator[ElectricityPriceData]):
                         _LOGGER.debug("No data available for %s (404)", url)
                         return None
                     if response.status != 200:
-                        _LOGGER.warning(
-                            "Unexpected status %s fetching %s", response.status, url
-                        )
+                        _LOGGER.warning("Unexpected status %s fetching %s", response.status, url)
                         return None
                     raw = await response.json()
             finally:

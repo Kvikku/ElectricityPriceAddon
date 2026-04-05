@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 
 import pytest
 
@@ -40,10 +40,30 @@ def sample_today():
     """24 hours of varied prices."""
     # Prices roughly mimicking a real day: cheap at night, expensive in morning/evening
     prices = [
-        0.10, 0.08, 0.07, 0.06, 0.05, 0.06,  # 00-05 (night, cheap)
-        0.15, 0.30, 0.45, 0.50, 0.40, 0.35,   # 06-11 (morning peak)
-        0.25, 0.20, 0.18, 0.15, 0.20, 0.35,   # 12-17 (afternoon)
-        0.55, 0.60, 0.50, 0.35, 0.20, 0.12,   # 18-23 (evening peak)
+        0.10,
+        0.08,
+        0.07,
+        0.06,
+        0.05,
+        0.06,  # 00-05 (night, cheap)
+        0.15,
+        0.30,
+        0.45,
+        0.50,
+        0.40,
+        0.35,  # 06-11 (morning peak)
+        0.25,
+        0.20,
+        0.18,
+        0.15,
+        0.20,
+        0.35,  # 12-17 (afternoon)
+        0.55,
+        0.60,
+        0.50,
+        0.35,
+        0.20,
+        0.12,  # 18-23 (evening peak)
     ]
     return _make_entries(prices)
 
@@ -182,7 +202,6 @@ class TestParsePrices:
         from custom_components.norway_electricity.coordinator import (
             ElectricityPriceCoordinator,
         )
-        from custom_components.norway_electricity.const import VAT_MULTIPLIER
 
         raw = [
             {

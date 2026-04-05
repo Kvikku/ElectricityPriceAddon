@@ -5,7 +5,6 @@ from __future__ import annotations
 from typing import Any
 
 import voluptuous as vol
-
 from homeassistant.config_entries import ConfigFlow, ConfigFlowResult, OptionsFlow
 from homeassistant.core import callback
 
@@ -27,9 +26,7 @@ class NorwayElectricityConfigFlow(ConfigFlow, domain=DOMAIN):
 
     VERSION = 1
 
-    async def async_step_user(
-        self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
+    async def async_step_user(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Handle the initial step — select price area."""
         if user_input is not None:
             area = user_input[CONF_AREA]
@@ -72,9 +69,7 @@ class NorwayElectricityOptionsFlow(OptionsFlow):
         """Initialize options flow."""
         self.config_entry = config_entry
 
-    async def async_step_init(
-        self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
+    async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Manage the options."""
         if user_input is not None:
             return self.async_create_entry(title="", data=user_input)
@@ -95,9 +90,7 @@ class NorwayElectricityOptionsFlow(OptionsFlow):
                     ): vol.All(vol.Coerce(int), vol.Range(min=1, max=12)),
                     vol.Required(
                         CONF_EXPENSIVE_HOURS,
-                        default=current.get(
-                            CONF_EXPENSIVE_HOURS, DEFAULT_EXPENSIVE_HOURS
-                        ),
+                        default=current.get(CONF_EXPENSIVE_HOURS, DEFAULT_EXPENSIVE_HOURS),
                     ): vol.All(vol.Coerce(int), vol.Range(min=1, max=12)),
                 }
             ),

@@ -1,8 +1,8 @@
 """Conftest: mock homeassistant modules so tests run without HA installed."""
 
 import sys
+from datetime import datetime, timedelta, timezone
 from unittest.mock import MagicMock
-from datetime import datetime, timezone, timedelta
 
 
 # Provide a real parse_datetime so the coordinator can parse ISO timestamps

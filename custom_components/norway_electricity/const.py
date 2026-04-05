@@ -2,9 +2,7 @@
 
 DOMAIN = "norway_electricity"
 
-API_URL_TEMPLATE = (
-    "https://www.hvakosterstrommen.no/api/v1/prices/{year}/{month}-{day}_{area}.json"
-)
+API_URL_TEMPLATE = "https://www.hvakosterstrommen.no/api/v1/prices/{year}/{month}-{day}_{area}.json"
 
 PRICE_AREAS: dict[str, str] = {
     "NO1": "Oslo / Øst-Norge",

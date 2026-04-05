@@ -102,6 +102,9 @@ views:
               {% endif %}
 
       # ── Hourly price chart with cheapest hours highlighted ─
+      #
+      # Cheap hours are rendered as green bars; all other hours
+      # use price-based colour thresholds (yellow → red).
       - type: custom:apexcharts-card
         header:
           title: "Today's Prices — Cheap Hours Highlighted"
@@ -123,9 +126,11 @@ views:
             y:
               formatter: |
                 EVAL:function(value) {
+                  if (value == null) return '';
                   return value.toFixed(2) + ' NOK/kWh';
                 }
         series:
+          # Cheap hours — always green
           - entity: sensor.electricity_price_no3
             data_generator: |
               const today = entity.attributes.raw_today || [];
@@ -135,21 +140,33 @@ views:
               ).map(h => h.hour);
               return today.map(e => [
                 new Date(e.start).getTime(),
-                e.price
+                cheap.includes(e.hour) ? e.price : null
+              ]);
+            type: column
+            name: Cheap
+            color: "#4CAF50"
+          # Other hours — colour by price level
+          - entity: sensor.electricity_price_no3
+            data_generator: |
+              const today = entity.attributes.raw_today || [];
+              const cheap = (
+                hass.states['binary_sensor.cheapest_hours_no3']
+                  ?.attributes?.cheapest_hours || []
+              ).map(h => h.hour);
+              return today.map(e => [
+                new Date(e.start).getTime(),
+                cheap.includes(e.hour) ? null : e.price
               ]);
             type: column
             name: Price
             color_threshold:
               - value: 0
-                color: "#4CAF50"
-              - value: 0.5
-                color: "#8BC34A"
-              - value: 1.0
                 color: "#FFC107"
-              - value: 2.0
+              - value: 1.0
                 color: "#FF9800"
-              - value: 3.0
+              - value: 2.0
                 color: "#F44336"
+          # Average reference line
           - entity: sensor.electricity_price_no3
             data_generator: |
               const data = entity.attributes.raw_today || [];

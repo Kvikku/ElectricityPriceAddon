@@ -66,6 +66,12 @@ After adding the integration, click **Configure** to adjust:
 | `binary_sensor.cheapest_hours_*` | Binary | ON if cheap now | `cheapest_hours`, `best_consecutive_window` |
 | `binary_sensor.expensive_hours_*` | Binary | ON if expensive now | `expensive_hours` |
 
+## Example Dashboard
+
+A full example dashboard is available in [`examples/dashboard.yaml`](examples/dashboard.yaml). It includes current price cards, daily statistics, cheap/expensive hour indicators, hourly price charts, and charging-window tables — all configured for **NO3** (Trondheim / Midt-Norge). To use a different region, replace every `no3` with your area code (e.g. `no1`, `no5`).
+
+> **Prerequisite:** Install [apexcharts-card](https://github.com/RomRider/apexcharts-card) via HACS for the chart cards.
+
 ## Lovelace Card Examples
 
 ### Hourly Price Bar Chart (ApexCharts)

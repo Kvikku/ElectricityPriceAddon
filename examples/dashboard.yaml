@@ -1,0 +1,178 @@
+# ─────────────────────────────────────────────────────────────
+# Example Home Assistant Dashboard — Norway Electricity Prices
+# Region: NO3 (Trondheim / Midt-Norge)
+# ─────────────────────────────────────────────────────────────
+#
+# Prerequisites:
+#   - Norway Electricity Prices integration configured for NO3
+#   - apexcharts-card installed via HACS
+#     https://github.com/RomRider/apexcharts-card
+#
+# Usage:
+#   1. In HA go to Settings → Dashboards → Add Dashboard
+#   2. Open the new dashboard, click ⋮ → Edit Dashboard → Raw configuration editor
+#   3. Paste the contents below and save
+#
+# To use a different region, replace every occurrence of "no3"
+# with your area code (no1, no2, no4, or no5).
+# ─────────────────────────────────────────────────────────────
+
+views:
+  - title: Electricity Prices
+    path: electricity
+    icon: mdi:flash
+    cards:
+      # ── Row 1: Current status glance ────────────────────────
+      - type: horizontal-stack
+        cards:
+          - type: entity
+            entity: sensor.electricity_price_no3
+            name: Current Price
+            icon: mdi:flash
+          - type: entity
+            entity: sensor.next_hour_price_no3
+            name: Next Hour
+            icon: mdi:flash-outline
+          - type: entity
+            entity: sensor.price_level_no3
+            name: Price Level
+            icon: mdi:speedometer
+
+      # ── Row 2: Daily statistics ─────────────────────────────
+      - type: horizontal-stack
+        cards:
+          - type: entity
+            entity: sensor.average_price_no3
+            name: Today Avg
+            icon: mdi:chart-line
+          - type: entity
+            entity: sensor.min_price_no3
+            name: Today Min
+            icon: mdi:arrow-down-bold
+          - type: entity
+            entity: sensor.max_price_no3
+            name: Today Max
+            icon: mdi:arrow-up-bold
+
+      # ── Row 3: Cheap / Expensive indicator ──────────────────
+      - type: horizontal-stack
+        cards:
+          - type: entity
+            entity: binary_sensor.cheapest_hours_no3
+            name: Cheap Hour Now?
+            icon: mdi:cash-minus
+          - type: entity
+            entity: binary_sensor.expensive_hours_no3
+            name: Expensive Hour Now?
+            icon: mdi:cash-plus
+
+      # ── Hourly price chart — Today ──────────────────────────
+      - type: custom:apexcharts-card
+        header:
+          title: Today's Electricity Prices — NO3
+          show: true
+        graph_span: 24h
+        span:
+          start: day
+        now:
+          show: true
+          label: Now
+        series:
+          - entity: sensor.electricity_price_no3
+            data_generator: |
+              const data = entity.attributes.raw_today || [];
+              return data.map(e => [new Date(e.start).getTime(), e.price]);
+            type: column
+            name: NOK/kWh
+            color: "#4CAF50"
+
+      # ── Hourly price chart — Today + Tomorrow ───────────────
+      - type: custom:apexcharts-card
+        header:
+          title: Electricity Prices — Today + Tomorrow
+          show: true
+        graph_span: 48h
+        span:
+          start: day
+        now:
+          show: true
+          label: Now
+        series:
+          - entity: sensor.electricity_price_no3
+            data_generator: |
+              const today = entity.attributes.raw_today || [];
+              const tomorrow = entity.attributes.raw_tomorrow || [];
+              const all = [...today, ...tomorrow];
+              return all.map(e => [new Date(e.start).getTime(), e.price]);
+            type: column
+            name: NOK/kWh
+            color: "#2196F3"
+
+      # ── Best consecutive charging window ────────────────────
+      - type: markdown
+        title: Best Charging Window
+        content: >
+          {% set w = state_attr('binary_sensor.cheapest_hours_no3',
+          'best_consecutive_window') %}
+
+          {% if w %}
+
+          **Start:** {{ w.start }}
+
+          **End:** {{ w.end }}
+
+          **Avg price:** {{ w.average_price }} NOK/kWh
+
+          | Hour | Price |
+          |------|-------|
+          {% for h in w.hours -%}
+          | {{ '%02d' | format(h.hour) }}:00 | {{ h.price }} |
+          {% endfor %}
+
+          {% else %}
+
+          _No data available yet._
+
+          {% endif %}
+
+      # ── Cheapest hours list ─────────────────────────────────
+      - type: markdown
+        title: Today's Cheapest Hours
+        content: >
+          {% set hours = state_attr('binary_sensor.cheapest_hours_no3',
+          'cheapest_hours') %}
+
+          {% if hours %}
+
+          | Hour | Price (NOK/kWh) |
+          |------|-----------------|
+          {% for h in hours -%}
+          | {{ '%02d' | format(h.hour) }}:00 | {{ h.price }} |
+          {% endfor %}
+
+          {% else %}
+
+          _No data available yet._
+
+          {% endif %}
+
+      # ── Most expensive hours list ───────────────────────────
+      - type: markdown
+        title: Today's Most Expensive Hours
+        content: >
+          {% set hours = state_attr('binary_sensor.expensive_hours_no3',
+          'expensive_hours') %}
+
+          {% if hours %}
+
+          | Hour | Price (NOK/kWh) |
+          |------|-----------------|
+          {% for h in hours -%}
+          | {{ '%02d' | format(h.hour) }}:00 | {{ h.price }} |
+          {% endfor %}
+
+          {% else %}
+
+          _No data available yet._
+
+          {% endif %}

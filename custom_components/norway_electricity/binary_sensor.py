@@ -7,6 +7,7 @@ from homeassistant.components.binary_sensor import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
@@ -17,6 +18,7 @@ from .const import (
     DEFAULT_CHEAP_HOURS,
     DEFAULT_EXPENSIVE_HOURS,
     DOMAIN,
+    PRICE_AREAS,
 )
 from .coordinator import ElectricityPriceCoordinator, ElectricityPriceData
 
@@ -39,26 +41,49 @@ async def async_setup_entry(
     )
 
 
-class CheapestHoursBinarySensor(CoordinatorEntity[ElectricityPriceCoordinator], BinarySensorEntity):
-    """Binary sensor that is ON during the cheapest hours of the day."""
+class ElectricityBinarySensorBase(CoordinatorEntity[ElectricityPriceCoordinator], BinarySensorEntity):
+    """Base class for electricity binary sensors."""
 
     _attr_has_entity_name = True
-    _attr_icon = "mdi:cash-minus"
 
-    def __init__(self, coordinator, entry, area) -> None:
+    def __init__(
+        self,
+        coordinator: ElectricityPriceCoordinator,
+        entry: ConfigEntry,
+        area: str,
+        key: str,
+        name: str,
+    ) -> None:
         super().__init__(coordinator)
         self._entry = entry
         self._area = area
-        self._attr_unique_id = f"{DOMAIN}_{area}_cheapest_hours"
-        self._attr_name = f"Cheapest Hours ({area})"
+        self._attr_unique_id = f"{DOMAIN}_{area}_{key}"
+        self._attr_name = f"{name} ({area})"
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, area)},
+            name=f"Electricity Prices {area}",
+            manufacturer="hvakosterstrommen.no",
+            model=PRICE_AREAS.get(area, area),
+            entry_type=DeviceEntryType.SERVICE,
+        )
+
+    @property
+    def data(self) -> ElectricityPriceData | None:
+        """Return coordinator data."""
+        return self.coordinator.data
+
+
+class CheapestHoursBinarySensor(ElectricityBinarySensorBase):
+    """Binary sensor that is ON during the cheapest hours of the day."""
+
+    _attr_icon = "mdi:cash-minus"
+
+    def __init__(self, coordinator: ElectricityPriceCoordinator, entry: ConfigEntry, area: str) -> None:
+        super().__init__(coordinator, entry, area, "cheapest_hours", "Cheapest Hours")
 
     @property
     def _num_hours(self) -> int:
         return self._entry.options.get(CONF_CHEAP_HOURS, DEFAULT_CHEAP_HOURS)
-
-    @property
-    def data(self) -> ElectricityPriceData | None:
-        return self.coordinator.data
 
     @property
     def is_on(self) -> bool | None:
@@ -78,7 +103,7 @@ class CheapestHoursBinarySensor(CoordinatorEntity[ElectricityPriceCoordinator], 
         cheapest = self.data.cheapest_hours(self._num_hours)
         sorted_by_time = sorted(cheapest, key=lambda e: e["start"])
 
-        attrs = {
+        attrs: dict = {
             "num_hours": self._num_hours,
             "cheapest_hours": [
                 {
@@ -103,26 +128,17 @@ class CheapestHoursBinarySensor(CoordinatorEntity[ElectricityPriceCoordinator], 
         return attrs
 
 
-class ExpensiveHoursBinarySensor(CoordinatorEntity[ElectricityPriceCoordinator], BinarySensorEntity):
+class ExpensiveHoursBinarySensor(ElectricityBinarySensorBase):
     """Binary sensor that is ON during the most expensive hours of the day."""
 
-    _attr_has_entity_name = True
     _attr_icon = "mdi:cash-plus"
 
-    def __init__(self, coordinator, entry, area) -> None:
-        super().__init__(coordinator)
-        self._entry = entry
-        self._area = area
-        self._attr_unique_id = f"{DOMAIN}_{area}_expensive_hours"
-        self._attr_name = f"Expensive Hours ({area})"
+    def __init__(self, coordinator: ElectricityPriceCoordinator, entry: ConfigEntry, area: str) -> None:
+        super().__init__(coordinator, entry, area, "expensive_hours", "Expensive Hours")
 
     @property
     def _num_hours(self) -> int:
         return self._entry.options.get(CONF_EXPENSIVE_HOURS, DEFAULT_EXPENSIVE_HOURS)
-
-    @property
-    def data(self) -> ElectricityPriceData | None:
-        return self.coordinator.data
 
     @property
     def is_on(self) -> bool | None:

@@ -43,10 +43,16 @@ dt_mock.now = _now
 update_coordinator_mock = MagicMock()
 update_coordinator_mock.DataUpdateCoordinator = _FakeDataUpdateCoordinator
 update_coordinator_mock.UpdateFailed = Exception
+update_coordinator_mock.CoordinatorEntity = MagicMock
+
+aiohttp_client_mock = MagicMock()
+device_registry_mock = MagicMock()
 
 helpers_mock = MagicMock()
 helpers_mock.update_coordinator = update_coordinator_mock
 helpers_mock.entity_platform = MagicMock()
+helpers_mock.aiohttp_client = aiohttp_client_mock
+helpers_mock.device_registry = device_registry_mock
 
 util_mock = MagicMock()
 util_mock.dt = dt_mock
@@ -65,6 +71,8 @@ _modules = {
     "homeassistant.helpers": helpers_mock,
     "homeassistant.helpers.update_coordinator": update_coordinator_mock,
     "homeassistant.helpers.entity_platform": helpers_mock.entity_platform,
+    "homeassistant.helpers.aiohttp_client": aiohttp_client_mock,
+    "homeassistant.helpers.device_registry": device_registry_mock,
     "homeassistant.util": util_mock,
     "homeassistant.util.dt": dt_mock,
     "homeassistant.components": ha_mock.components,

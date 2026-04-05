@@ -1,5 +1,9 @@
 # Norway Electricity Prices — Home Assistant Integration
 
+<p align="center">
+  <img src="custom_components/norway_electricity/icon.svg" alt="Norway Electricity Prices icon" width="128" height="128">
+</p>
+
 A custom Home Assistant integration that fetches real-time Norwegian electricity spot prices from [hvakosterstrommen.no](https://www.hvakosterstrommen.no/) and provides sensors, price level indicators, and smart automation helpers for each of the five price areas (NO1–NO5).
 
 ## Features

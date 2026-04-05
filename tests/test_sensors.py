@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from unittest.mock import MagicMock
 
 import pytest
@@ -18,8 +18,6 @@ from custom_components.norway_electricity.sensor import (
 )
 
 # --- Helpers ---
-
-TZ = timezone(timedelta(hours=1))
 
 
 def _make_entries(prices: list[float], base_hour: int = 0, date_str: str = "2026-03-20") -> list[dict]:

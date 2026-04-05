@@ -7,6 +7,7 @@ import logging
 from datetime import timedelta
 from typing import Any
 
+import aiohttp
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
@@ -238,4 +239,4 @@ class ElectricityPriceCoordinator(DataUpdateCoordinator[ElectricityPriceData]):
         return sorted(entries, key=lambda e: e["start"])
 
 
-_REQUEST_TIMEOUT = __import__("aiohttp").ClientTimeout(total=15)
+_REQUEST_TIMEOUT = aiohttp.ClientTimeout(total=15)

@@ -1,0 +1,247 @@
+# ─────────────────────────────────────────────────────────────
+# EV / Smart-Home Dashboard — Norway Electricity Prices
+# Region: NO3 (Trondheim / Midt-Norge)
+# ─────────────────────────────────────────────────────────────
+#
+# An energy-optimisation dashboard designed for EV owners and
+# smart-home users who want to shift loads to the cheapest
+# hours.  Highlights the best charging window, lists cheapest
+# & most expensive hours, and shows the hourly price forecast.
+#
+# Prerequisites:
+#   - Norway Electricity Prices integration configured for NO3
+#   - apexcharts-card installed via HACS
+#     https://github.com/RomRider/apexcharts-card
+#
+# Usage:
+#   1. In HA go to Settings → Dashboards → Add Dashboard
+#   2. Open the new dashboard, click ⋮ → Edit Dashboard
+#      → Raw configuration editor
+#   3. Paste the contents below and save
+#
+# To use a different region, replace every occurrence of "no3"
+# with your area code (no1, no2, no4, or no5).
+# ─────────────────────────────────────────────────────────────
+
+views:
+  - title: EV & Energy
+    path: ev-energy
+    icon: mdi:ev-station
+    cards:
+      # ── Charging status at a glance ────────────────────────
+      - type: horizontal-stack
+        cards:
+          - type: entity
+            entity: binary_sensor.cheapest_hours_no3
+            name: Cheap Hour Now?
+            icon: mdi:battery-charging
+          - type: entity
+            entity: sensor.electricity_price_no3
+            name: Current Price
+            icon: mdi:flash
+          - type: entity
+            entity: sensor.price_level_no3
+            name: Price Level
+            icon: mdi:speedometer
+
+      # ── Best consecutive charging window ───────────────────
+      - type: markdown
+        title: "⚡ Best Charging Window"
+        content: |
+          {% set w = state_attr('binary_sensor.cheapest_hours_no3',
+          'best_consecutive_window') %}
+          {% if w %}
+          🕐 **{{ w.start | as_datetime | as_local
+              | strftime('%H:%M') }}** → **{{ w.end | as_datetime
+              | as_local | strftime('%H:%M') }}**
+          ({{ w.hours | length }} consecutive hours)
+
+          💰 Avg window price: **{{ w.average_price | round(3) }}** NOK/kWh
+          📊 Today's average:  **{{ states('sensor.average_price_no3')
+              | float(0) | round(3) }}** NOK/kWh
+
+          | Hour | Price (NOK/kWh) |
+          |:----:|:---------------:|
+          {% for h in w.hours -%}
+          | {{ '%02d' | format(h.hour) }}:00 | {{ h.price | round(3) }} |
+          {% endfor %}
+          {% else %}
+          _No data available yet._
+          {% endif %}
+
+      # ── Cheapest & Expensive hours side-by-side ────────────
+      - type: horizontal-stack
+        cards:
+          - type: markdown
+            title: "🟢 Cheapest Hours"
+            content: |
+              {% set hours = state_attr(
+              'binary_sensor.cheapest_hours_no3', 'cheapest_hours') %}
+              {% if hours %}
+              | Hour | Price |
+              |:----:|:-----:|
+              {% for h in hours -%}
+              | {{ '%02d' | format(h.hour) }}:00 | {{ h.price | round(3) }} |
+              {% endfor %}
+              {% else %}
+              _No data yet._
+              {% endif %}
+          - type: markdown
+            title: "🔴 Expensive Hours"
+            content: |
+              {% set hours = state_attr(
+              'binary_sensor.expensive_hours_no3', 'expensive_hours') %}
+              {% if hours %}
+              | Hour | Price |
+              |:----:|:-----:|
+              {% for h in hours -%}
+              | {{ '%02d' | format(h.hour) }}:00 | {{ h.price | round(3) }} |
+              {% endfor %}
+              {% else %}
+              _No data yet._
+              {% endif %}
+
+      # ── Hourly price chart with cheapest hours highlighted ─
+      #
+      # Cheap hours are rendered as green bars; all other hours
+      # use price-based colour thresholds (yellow → red).
+      - type: custom:apexcharts-card
+        header:
+          title: "Today's Prices — Cheap Hours Highlighted"
+          show: true
+        graph_span: 24h
+        span:
+          start: day
+        now:
+          show: true
+          label: Now
+        yaxis:
+          - min: 0
+            apex_config:
+              forceNiceScale: true
+        apex_config:
+          chart:
+            height: 300
+          tooltip:
+            y:
+              formatter: |
+                EVAL:function(value) {
+                  if (value == null) return '';
+                  return value.toFixed(2) + ' NOK/kWh';
+                }
+        series:
+          # Cheap hours — always green
+          - entity: sensor.electricity_price_no3
+            data_generator: |
+              const today = entity.attributes.raw_today || [];
+              const cheap = (
+                hass.states['binary_sensor.cheapest_hours_no3']
+                  ?.attributes?.cheapest_hours || []
+              ).map(h => h.hour);
+              return today.map(e => [
+                new Date(e.start).getTime(),
+                cheap.includes(e.hour) ? e.price : null
+              ]);
+            type: column
+            name: Cheap
+            color: "#4CAF50"
+          # Other hours — colour by price level
+          - entity: sensor.electricity_price_no3
+            data_generator: |
+              const today = entity.attributes.raw_today || [];
+              const cheap = (
+                hass.states['binary_sensor.cheapest_hours_no3']
+                  ?.attributes?.cheapest_hours || []
+              ).map(h => h.hour);
+              return today.map(e => [
+                new Date(e.start).getTime(),
+                cheap.includes(e.hour) ? null : e.price
+              ]);
+            type: column
+            name: Price
+            color_threshold:
+              - value: 0
+                color: "#FFC107"
+              - value: 1.0
+                color: "#FF9800"
+              - value: 2.0
+                color: "#F44336"
+          # Average reference line
+          - entity: sensor.electricity_price_no3
+            data_generator: |
+              const data = entity.attributes.raw_today || [];
+              if (data.length === 0) return [];
+              const avg =
+                data.reduce((sum, e) => sum + e.price, 0) / data.length;
+              return data.map(e => [
+                new Date(e.start).getTime(), avg
+              ]);
+            name: Average
+            type: line
+            color: "#9E9E9E"
+            stroke_width: 2
+            extend_to: end
+
+      # ── 48-hour forecast (Today + Tomorrow) ────────────────
+      - type: custom:apexcharts-card
+        header:
+          title: "48 h Forecast — Today + Tomorrow"
+          show: true
+        graph_span: 48h
+        span:
+          start: day
+        now:
+          show: true
+          label: Now
+        yaxis:
+          - min: 0
+            apex_config:
+              forceNiceScale: true
+        apex_config:
+          chart:
+            height: 250
+          tooltip:
+            y:
+              formatter: |
+                EVAL:function(value) {
+                  return value.toFixed(2) + ' NOK/kWh';
+                }
+        series:
+          - entity: sensor.electricity_price_no3
+            data_generator: |
+              const today = entity.attributes.raw_today || [];
+              const tomorrow = entity.attributes.raw_tomorrow || [];
+              if (tomorrow.length === 0) return [];
+              const all = [...today, ...tomorrow];
+              return all.map(e => [
+                new Date(e.start).getTime(), e.price
+              ]);
+            type: column
+            name: Price
+            color_threshold:
+              - value: 0
+                color: "#42A5F5"
+              - value: 0.5
+                color: "#66BB6A"
+              - value: 1.0
+                color: "#FFA726"
+              - value: 2.0
+                color: "#FF7043"
+              - value: 3.0
+                color: "#EF5350"
+
+      # ── Quick daily stats ──────────────────────────────────
+      - type: horizontal-stack
+        cards:
+          - type: entity
+            entity: sensor.average_price_no3
+            name: Today Avg
+            icon: mdi:chart-line
+          - type: entity
+            entity: sensor.min_price_no3
+            name: Today Min
+            icon: mdi:arrow-down-bold
+          - type: entity
+            entity: sensor.max_price_no3
+            name: Today Max
+            icon: mdi:arrow-up-bold

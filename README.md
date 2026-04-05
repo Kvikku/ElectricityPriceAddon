@@ -20,6 +20,7 @@ five Norwegian price areas (NO1–NO5).
 - [Installation](#installation)
 - [Configuration](#configuration)
 - [Sensors & Entities](#sensors--entities)
+- [Example Dashboard](#example-dashboard)
 - [Lovelace Examples](#lovelace-examples)
 - [Automation Examples](#automation-examples)
 - [Data Source](#data-source)
@@ -122,6 +123,14 @@ Each price area creates **8 entities**. Replace `{area}` with the
 | `binary_sensor.expensive_hours_no5` | Binary | ON if expensive now | `expensive_hours` |
 
 📖 **Full details:** [Sensor Reference](docs/sensors.md)
+
+---
+
+## Example Dashboard
+
+A full example dashboard is available in [`examples/dashboard.yaml`](examples/dashboard.yaml). It includes current price cards, daily statistics, cheap/expensive hour indicators, hourly price charts, and charging-window tables — all configured for **NO3** (Trondheim / Midt-Norge). To use a different region, replace every `no3` with your area code (e.g. `no1`, `no5`).
+
+> **Prerequisite:** Install [apexcharts-card](https://github.com/RomRider/apexcharts-card) via HACS for the chart cards.
 
 ---
 

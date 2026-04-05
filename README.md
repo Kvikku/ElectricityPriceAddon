@@ -1,76 +1,134 @@
 # Norway Electricity Prices — Home Assistant Integration
 
-A custom Home Assistant integration that fetches real-time Norwegian electricity spot prices from [hvakosterstrommen.no](https://www.hvakosterstrommen.no/) and provides sensors, price level indicators, and smart automation helpers for each of the five price areas (NO1–NO5).
+[![HACS Validation](https://github.com/Kvikku/ElectricityPriceAddon/actions/workflows/hacs-validate.yaml/badge.svg)](https://github.com/Kvikku/ElectricityPriceAddon/actions/workflows/hacs-validate.yaml)
+[![GitHub Release](https://img.shields.io/github/v/release/Kvikku/ElectricityPriceAddon?sort=semver)](https://github.com/Kvikku/ElectricityPriceAddon/releases)
+[![License: MIT](https://img.shields.io/github/license/Kvikku/ElectricityPriceAddon)](LICENSE)
+[![HA Version](https://img.shields.io/badge/Home%20Assistant-2024.1%2B-blue)](https://www.home-assistant.io/)
+[![HACS](https://img.shields.io/badge/HACS-Custom-orange)](https://hacs.xyz/)
+
+A custom Home Assistant integration that fetches real-time Norwegian
+electricity spot prices from
+[hvakosterstrommen.no](https://www.hvakosterstrommen.no/) and provides
+sensors, price level indicators, and smart automation helpers for each of the
+five Norwegian price areas (NO1–NO5).
+
+---
+
+## Table of Contents
+
+- [Features](#features)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Sensors & Entities](#sensors--entities)
+- [Lovelace Examples](#lovelace-examples)
+- [Automation Examples](#automation-examples)
+- [Data Source](#data-source)
+- [Documentation](#documentation)
+- [Contributing](#contributing)
+- [License](#license)
+
+---
 
 ## Features
 
-- **Current hour price** (NOK/kWh) — with EUR price as attribute
-- **Next hour price** — plan ahead
-- **Today average / min / max** — daily statistics with timestamps
-- **Price level** — categorical indicator: `very_cheap`, `cheap`, `normal`, `expensive`, `very_expensive`
-- **Cheapest hours binary sensor** — ON when the current hour is among the N cheapest today
-- **Most expensive hours binary sensor** — ON when the current hour is among the N most expensive
-- **Best consecutive window** — attribute showing the cheapest consecutive block of N hours (great for EV charging)
-- **Tomorrow's prices** — fetched automatically once available (~13:00 CET), with HA event fired
-- **VAT toggle** — include or exclude 25% MVA in options
-- **Multi-area support** — add the integration multiple times for different price areas
-- **HACS compatible**
+| Feature | Description |
+|---------|-------------|
+| ⚡ **Current hour price** | Real-time NOK/kWh with EUR price as attribute |
+| ⏭️ **Next hour price** | Plan ahead with upcoming hour's price |
+| 📊 **Daily statistics** | Average, min, and max prices with timestamps |
+| 🏷️ **Price level** | Categorical indicator: `very_cheap` → `very_expensive` |
+| 💚 **Cheapest hours** | Binary sensor ON during the N cheapest hours today |
+| 🔴 **Expensive hours** | Binary sensor ON during the N most expensive hours |
+| 🔋 **Best charging window** | Finds the cheapest consecutive block of N hours (ideal for EV charging) |
+| 📅 **Tomorrow's prices** | Fetched automatically once available (~13:00 CET), with HA event fired |
+| 🧾 **VAT toggle** | Include or exclude 25% MVA in integration options |
+| 🗺️ **Multi-area** | Add the integration multiple times for different price areas |
+| ✅ **HACS compatible** | Easy install and updates through HACS |
+
+---
 
 ## Installation
 
 ### HACS (Recommended)
 
-1. Open HACS in your Home Assistant instance
-2. Go to **Integrations** → **⋮ menu** → **Custom repositories**
-3. Add this repository URL and select category **Integration**
-4. Click **Install**
-5. Restart Home Assistant
+1. Open **HACS** in your Home Assistant instance.
+2. Go to **Integrations** → **⋮ menu** → **Custom repositories**.
+3. Add this repository URL:
+   ```
+   https://github.com/Kvikku/ElectricityPriceAddon
+   ```
+4. Select category **Integration** and click **Add**.
+5. Find **Norway Electricity Prices** in the integration list and click
+   **Install**.
+6. **Restart** Home Assistant.
 
-### Manual
+### Manual Installation
 
-1. Copy the `custom_components/norway_electricity/` folder to your Home Assistant `config/custom_components/` directory
-2. Restart Home Assistant
+1. Download or clone this repository.
+2. Copy the `custom_components/norway_electricity/` folder into your Home
+   Assistant `config/custom_components/` directory.
+3. **Restart** Home Assistant.
+
+---
 
 ## Configuration
 
-1. Go to **Settings** → **Devices & Services** → **Add Integration**
-2. Search for **Norway Electricity Prices**
+### Initial Setup
+
+1. Go to **Settings** → **Devices & Services** → **Add Integration**.
+2. Search for **Norway Electricity Prices**.
 3. Select your price area:
-   - **NO1** — Oslo / Øst-Norge
-   - **NO2** — Kristiansand / Sør-Norge
-   - **NO3** — Trondheim / Midt-Norge
-   - **NO4** — Tromsø / Nord-Norge
-   - **NO5** — Bergen / Vest-Norge
+
+   | Code | Region |
+   |------|--------|
+   | **NO1** | Oslo / Øst-Norge |
+   | **NO2** | Kristiansand / Sør-Norge |
+   | **NO3** | Trondheim / Midt-Norge |
+   | **NO4** | Tromsø / Nord-Norge |
+   | **NO5** | Bergen / Vest-Norge |
+
 4. Done! Sensors will appear automatically.
+
+> 💡 **Tip:** Add the integration multiple times to monitor different price
+> areas simultaneously.
 
 ### Options
 
 After adding the integration, click **Configure** to adjust:
 
-| Option | Default | Description |
-|--------|---------|-------------|
-| Include VAT (25%) | ✅ On | Add 25% MVA to spot prices |
-| Cheapest hours | 6 | Number of hours considered "cheap" |
-| Most expensive hours | 6 | Number of hours considered "expensive" |
+| Option | Default | Range | Description |
+|--------|---------|-------|-------------|
+| Include VAT (25%) | ✅ On | — | Add 25% MVA to spot prices |
+| Cheapest hours | 6 | 1–12 | Number of hours considered "cheap" |
+| Most expensive hours | 6 | 1–12 | Number of hours considered "expensive" |
 
-## Sensors Created
+---
+
+## Sensors & Entities
+
+Each price area creates **8 entities**:
 
 | Entity | Type | State | Key Attributes |
 |--------|------|-------|----------------|
-| `sensor.electricity_price_*` | Sensor | Current NOK/kWh | `price_eur`, `hour`, `raw_today`, `raw_tomorrow` |
-| `sensor.next_hour_price_*` | Sensor | Next hour NOK/kWh | `price_eur`, `hour` |
-| `sensor.average_price_*` | Sensor | Today's average | — |
-| `sensor.min_price_*` | Sensor | Today's lowest | `hour` of cheapest |
-| `sensor.max_price_*` | Sensor | Today's highest | `hour` of most expensive |
-| `sensor.price_level_*` | Sensor | Category string | — |
-| `binary_sensor.cheapest_hours_*` | Binary | ON if cheap now | `cheapest_hours`, `best_consecutive_window` |
-| `binary_sensor.expensive_hours_*` | Binary | ON if expensive now | `expensive_hours` |
+| `sensor.electricity_price_{area}` | Sensor | Current NOK/kWh | `price_eur`, `hour`, `raw_today`, `raw_tomorrow` |
+| `sensor.next_hour_price_{area}` | Sensor | Next hour NOK/kWh | `price_eur`, `hour` |
+| `sensor.average_price_{area}` | Sensor | Today's average | — |
+| `sensor.min_price_{area}` | Sensor | Today's lowest | `hour` of cheapest |
+| `sensor.max_price_{area}` | Sensor | Today's highest | `hour` of most expensive |
+| `sensor.price_level_{area}` | Sensor | Category string | — |
+| `binary_sensor.cheapest_hours_{area}` | Binary | ON if cheap now | `cheapest_hours`, `best_consecutive_window` |
+| `binary_sensor.expensive_hours_{area}` | Binary | ON if expensive now | `expensive_hours` |
 
-## Lovelace Card Examples
+📖 **Full details:** [Sensor Reference](docs/sensors.md)
 
-### Hourly Price Bar Chart (ApexCharts)
+---
 
-Install [apexcharts-card](https://github.com/RomRider/apexcharts-card) via HACS, then add this card:
+## Lovelace Examples
+
+### Hourly Price Bar Chart
+
+Requires [apexcharts-card](https://github.com/RomRider/apexcharts-card)
+(install via HACS):
 
 ```yaml
 type: custom:apexcharts-card
@@ -90,12 +148,12 @@ series:
     color: "#4CAF50"
 ```
 
-### Price Chart — Today + Tomorrow
+### Today + Tomorrow (48h View)
 
 ```yaml
 type: custom:apexcharts-card
 header:
-  title: Electricity Prices
+  title: Electricity Prices (48h)
   show: true
 graph_span: 48h
 span:
@@ -112,9 +170,13 @@ series:
     color: "#2196F3"
 ```
 
+📖 **More examples:** [Automation & Lovelace Examples](docs/automations.md)
+
+---
+
 ## Automation Examples
 
-### Notify When Cheapest Window Starts
+### Notify When Cheap Electricity Starts
 
 ```yaml
 automation:
@@ -130,24 +192,6 @@ automation:
           message: >
             Current price: {{ states('sensor.electricity_price_no5') }} NOK/kWh.
             Good time to charge the car or run the dishwasher!
-```
-
-### Notify When Tomorrow's Prices Are Available
-
-```yaml
-automation:
-  - alias: "Tomorrow prices available"
-    trigger:
-      - platform: event
-        event_type: norway_electricity_tomorrow_available
-    action:
-      - service: notify.mobile_app_your_phone
-        data:
-          title: "Tomorrow's electricity prices"
-          message: >
-            Prices for tomorrow are now available.
-            Cheapest window:
-            {{ state_attr('binary_sensor.cheapest_hours_no5', 'best_consecutive_window') }}
 ```
 
 ### Pause EV Charging During Expensive Hours
@@ -172,10 +216,64 @@ automation:
         entity_id: switch.ev_charger
 ```
 
+📖 **More automations:** [Automation Examples](docs/automations.md) — includes
+dishwasher scheduling, water heater control, daily summaries, template
+sensors, and more.
+
+---
+
 ## Data Source
 
-All data comes from [hvakosterstrommen.no](https://www.hvakosterstrommen.no/) — a free, open API requiring no API key.
+All data comes from
+[hvakosterstrommen.no](https://www.hvakosterstrommen.no/) — a free, open API
+provided by [Hva koster strømmen](https://www.hvakosterstrommen.no/).
+
+- **No API key required**
+- **Update interval:** every 30 minutes
+- **Tomorrow's prices:** typically available after 13:00 CET
+
+---
+
+## Documentation
+
+| Document | Description |
+|----------|-------------|
+| [Sensor Reference](docs/sensors.md) | Detailed info on every entity, attribute, and event |
+| [Automation Examples](docs/automations.md) | Ready-to-use automations, Lovelace cards, and template sensors |
+| [Architecture](docs/architecture.md) | Internal data flow, components, and design decisions |
+| [Development Guide](docs/development.md) | Setup, testing, and code style for contributors |
+| [Contributing](CONTRIBUTING.md) | How to report bugs, suggest features, and submit PRs |
+
+---
+
+## Contributing
+
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for
+guidelines.
+
+```bash
+# Quick start for developers
+git clone https://github.com/Kvikku/ElectricityPriceAddon.git
+cd ElectricityPriceAddon
+python -m venv .venv && source .venv/bin/activate
+pip install pytest aiohttp ruff
+pytest tests/ -v
+```
+
+---
+
+## Troubleshooting
+
+| Problem | Solution |
+|---------|----------|
+| No data after setup | Check HA logs (Settings → System → Logs). The API may be temporarily unavailable. |
+| Prices show 0.0 | Verify your price area is correct. Check if the API has data for today. |
+| Tomorrow's prices missing | Normal before ~13:00 CET. They appear automatically when the API publishes them. |
+| Sensors show "unavailable" | Restart HA. If persistent, remove and re-add the integration. |
+| HACS can't find the integration | Ensure you added the repository URL as a custom repository with category "Integration". |
+
+---
 
 ## License
 
-MIT
+[MIT](LICENSE)

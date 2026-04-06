@@ -1,11 +1,11 @@
 # Sensor Reference
 
-Complete reference for all entities created by the **Norway Electricity
+Complete reference for all entities created by the **Nordic Electricity
 Prices** integration.
 
-Each configured price area (NO1–NO5) creates its own set of entities. Entity
-IDs use the **lowercase** area code as a suffix (e.g., `no1`, `no2`, `no3`,
-`no4`, `no5`). Examples below use `no5` — replace with your area.
+Each configured price area creates its own set of entities. Entity
+IDs use the **lowercase** area code as a suffix (e.g., `no1`, `se3`, `fi`).
+Examples below use `no5` — replace with your area.
 
 ---
 
@@ -153,6 +153,68 @@ prices by percentile:
 
 ---
 
+### Tomorrow Average Price
+
+| | |
+|---|---|
+| **Entity** | `sensor.tomorrow_average_price_no5` |
+| **Type** | Sensor |
+| **Device class** | `monetary` |
+| **Unit** | NOK/kWh |
+| **Icon** | `mdi:chart-line` |
+| **State** | Tomorrow's average spot price, or `unavailable` until prices are published |
+
+> ℹ️ Tomorrow's prices are typically published at ~13:00 CET. The sensor
+> returns `unavailable` before they are available.
+
+**Attributes:**
+
+| Attribute | Type | Description |
+|-----------|------|-------------|
+| `raw_tomorrow` | list | All 24 hourly entries for tomorrow (for chart cards) |
+
+---
+
+### Tomorrow Min Price
+
+| | |
+|---|---|
+| **Entity** | `sensor.tomorrow_min_price_no5` |
+| **Type** | Sensor |
+| **Device class** | `monetary` |
+| **Unit** | NOK/kWh |
+| **Icon** | `mdi:arrow-down-bold` |
+| **State** | Tomorrow's lowest hourly price, or `unavailable` until prices are published |
+
+**Attributes:**
+
+| Attribute | Type | Description |
+|-----------|------|-------------|
+| `hour` | int | Hour with tomorrow's lowest price |
+| `start` | ISO 8601 | Start time of that hour |
+
+---
+
+### Tomorrow Max Price
+
+| | |
+|---|---|
+| **Entity** | `sensor.tomorrow_max_price_no5` |
+| **Type** | Sensor |
+| **Device class** | `monetary` |
+| **Unit** | NOK/kWh |
+| **Icon** | `mdi:arrow-up-bold` |
+| **State** | Tomorrow's highest hourly price, or `unavailable` until prices are published |
+
+**Attributes:**
+
+| Attribute | Type | Description |
+|-----------|------|-------------|
+| `hour` | int | Hour with tomorrow's highest price |
+| `start` | ISO 8601 | Start time of that hour |
+
+---
+
 ## Binary Sensors
 
 ### Cheapest Hours
@@ -208,6 +270,64 @@ prices by percentile:
 
 ---
 
+### Price Below Threshold
+
+| | |
+|---|---|
+| **Entity** | `binary_sensor.price_below_threshold_no5` |
+| **Type** | Binary sensor |
+| **Icon** | `mdi:trending-down` |
+| **State** | ON when the current price is below the configured threshold; `unavailable` when no threshold is set |
+
+Configure the threshold in the integration's options (in NOK/kWh). Leave it
+empty (or set to `None`) to disable the sensor.
+
+**Attributes:**
+
+| Attribute | Type | Description |
+|-----------|------|-------------|
+| `threshold` | float or null | The configured low price threshold (NOK/kWh) |
+| `current_price` | float | Current hour's price (NOK/kWh) |
+
+**Example automation — notify when price drops below 0.20 NOK/kWh:**
+
+```yaml
+automation:
+  - alias: "Notify cheap electricity alert"
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.price_below_threshold_no5
+        to: "on"
+    action:
+      - service: notify.mobile_app_your_phone
+        data:
+          title: "💚 Price below threshold!"
+          message: "Current price: {{ states('sensor.electricity_price_no5') }} NOK/kWh"
+```
+
+---
+
+### Price Above Threshold
+
+| | |
+|---|---|
+| **Entity** | `binary_sensor.price_above_threshold_no5` |
+| **Type** | Binary sensor |
+| **Icon** | `mdi:trending-up` |
+| **State** | ON when the current price is above the configured threshold; `unavailable` when no threshold is set |
+
+Configure the threshold in the integration's options (in NOK/kWh). Leave it
+empty (or set to `None`) to disable the sensor.
+
+**Attributes:**
+
+| Attribute | Type | Description |
+|-----------|------|-------------|
+| `threshold` | float or null | The configured high price threshold (NOK/kWh) |
+| `current_price` | float | Current hour's price (NOK/kWh) |
+
+---
+
 ## Events
 
 ### `norway_electricity_tomorrow_available`
@@ -225,3 +345,23 @@ Fired once per day when tomorrow's prices become available (typically around
 ```
 
 Use this event to trigger automations that plan the next day's energy usage.
+
+---
+
+## Supported Price Areas
+
+| Code | Region |
+|------|--------|
+| **NO1** | Oslo / Øst-Norge |
+| **NO2** | Kristiansand / Sør-Norge |
+| **NO3** | Trondheim / Midt-Norge |
+| **NO4** | Tromsø / Nord-Norge |
+| **NO5** | Bergen / Vest-Norge |
+| **SE1** | Luleå / Norra Sverige |
+| **SE2** | Sundsvall / Mellersta Nord Sverige |
+| **SE3** | Stockholm / Mellersta Syd Sverige |
+| **SE4** | Malmö / Södra Sverige |
+| **DK1** | Jylland / Fyn (Vest-Danmark) |
+| **DK2** | Sjælland (Øst-Danmark) |
+| **FI** | Finland |
+

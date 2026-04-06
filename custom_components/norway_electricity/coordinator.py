@@ -60,9 +60,7 @@ class ElectricityPriceData:
         """Return the price entry for the next hour."""
         return self.future_hour_price(1, now)
 
-    def future_hour_price(
-        self, hours_ahead: int, now: dt.datetime | None = None
-    ) -> PriceEntry | None:
+    def future_hour_price(self, hours_ahead: int, now: dt.datetime | None = None) -> PriceEntry | None:
         """Return the price entry for N hours from now."""
         now = now or dt_util.now()
         target = now + timedelta(hours=hours_ahead)

@@ -7,13 +7,22 @@ Assistant instance and do NOT use the sys.modules mocking from tests/conftest.py
 
 from __future__ import annotations
 
+import contextlib
 import datetime as dt_module
-from collections.abc import Generator
 from datetime import datetime, timedelta
 from typing import Any
 from unittest.mock import patch
 
 from custom_components.norway_electricity.coordinator import ElectricityPriceCoordinator
+
+# ---------------------------------------------------------------------------
+# Fixed reference date used across all integration tests.
+# dt_util.now() is patched to this value so that coordinator logic and
+# entity state computations are deterministic regardless of when CI runs.
+# ---------------------------------------------------------------------------
+FIXED_NOW = datetime.fromisoformat("2026-03-20T12:00:00+01:00")
+FIXED_TODAY = FIXED_NOW.date()
+FIXED_TOMORROW = FIXED_TODAY + dt_module.timedelta(days=1)
 
 # ---------------------------------------------------------------------------
 # Sample price data factory
@@ -45,25 +54,37 @@ TOMORROW_RAW = make_raw_prices(date_str="2026-03-21")
 
 
 # ---------------------------------------------------------------------------
-# Patch helper: mock _fetch_prices so no real HTTP requests are made
+# Patch helper: mock _fetch_prices AND dt_util.now so that:
+#   - coordinator logic uses the fixed reference date (2026-03-20)
+#   - entity state computations (current_price etc.) use the same fixed time
+#   - no real HTTP requests are made
 # ---------------------------------------------------------------------------
 
 
+@contextlib.contextmanager
 def patch_fetch_prices(
     today: list[dict[str, Any]] | None = None,
     tomorrow: list[dict[str, Any]] | None = None,
-) -> Generator:
-    """Context manager that patches coordinator._fetch_prices with canned data."""
+):
+    """Context manager that stubs coordinator data fetching with canned prices."""
     today_data = today if today is not None else TODAY_RAW
     tomorrow_data = tomorrow
-    today_date = dt_module.date.fromisoformat("2026-03-20")
 
     async def _fake_fetch(self: ElectricityPriceCoordinator, date: dt_module.date):
-        if date == today_date:
+        if date == FIXED_TODAY:
             return self._parse_prices(today_data)
-        return self._parse_prices(tomorrow_data) if tomorrow_data else None
+        if date == FIXED_TOMORROW:
+            return self._parse_prices(tomorrow_data) if tomorrow_data else None
+        return None
 
-    return patch(
-        "custom_components.norway_electricity.coordinator.ElectricityPriceCoordinator._fetch_prices",
-        new=_fake_fetch,
-    )
+    with (
+        patch(
+            "custom_components.norway_electricity.coordinator.ElectricityPriceCoordinator._fetch_prices",
+            new=_fake_fetch,
+        ),
+        patch(
+            "custom_components.norway_electricity.coordinator.dt_util.now",
+            return_value=FIXED_NOW,
+        ),
+    ):
+        yield

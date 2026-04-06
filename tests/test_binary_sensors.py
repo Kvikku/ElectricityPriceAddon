@@ -239,6 +239,22 @@ class TestPriceBelowThresholdBinarySensor:
         sensor = PriceBelowThresholdBinarySensor(coord, entry, "NO1")
         assert sensor.is_on is None
 
+    def test_not_available_when_threshold_not_set(self, coordinator):
+        entry = self._make_entry_with_threshold(low=None)
+        sensor = PriceBelowThresholdBinarySensor(coordinator, entry, "NO1")
+        assert sensor.available is False
+
+    def test_not_available_when_no_data(self):
+        coord = _make_coordinator(None)
+        entry = self._make_entry_with_threshold(low=0.50)
+        sensor = PriceBelowThresholdBinarySensor(coord, entry, "NO1")
+        assert sensor.available is False
+
+    def test_available_when_threshold_set_and_data_present(self, coordinator):
+        entry = self._make_entry_with_threshold(low=0.50)
+        sensor = PriceBelowThresholdBinarySensor(coordinator, entry, "NO1")
+        assert sensor.available is True
+
     def test_extra_state_attributes_contains_threshold(self, coordinator):
         entry = self._make_entry_with_threshold(low=0.30)
         sensor = PriceBelowThresholdBinarySensor(coordinator, entry, "NO1")
@@ -294,6 +310,22 @@ class TestPriceAboveThresholdBinarySensor:
         entry = self._make_entry_with_threshold(high=0.50)
         sensor = PriceAboveThresholdBinarySensor(coord, entry, "NO1")
         assert sensor.is_on is None
+
+    def test_not_available_when_threshold_not_set(self, coordinator):
+        entry = self._make_entry_with_threshold(high=None)
+        sensor = PriceAboveThresholdBinarySensor(coordinator, entry, "NO1")
+        assert sensor.available is False
+
+    def test_not_available_when_no_data(self):
+        coord = _make_coordinator(None)
+        entry = self._make_entry_with_threshold(high=0.50)
+        sensor = PriceAboveThresholdBinarySensor(coord, entry, "NO1")
+        assert sensor.available is False
+
+    def test_available_when_threshold_set_and_data_present(self, coordinator):
+        entry = self._make_entry_with_threshold(high=0.50)
+        sensor = PriceAboveThresholdBinarySensor(coordinator, entry, "NO1")
+        assert sensor.available is True
 
     def test_extra_state_attributes_contains_threshold(self, coordinator):
         entry = self._make_entry_with_threshold(high=0.80)

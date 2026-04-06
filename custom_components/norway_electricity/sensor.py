@@ -268,6 +268,10 @@ class TomorrowAveragePriceSensor(ElectricityPriceSensorBase):
         super().__init__(coordinator, area, "tomorrow_average_price", "Tomorrow Average Price")
 
     @property
+    def available(self) -> bool:
+        return super().available and self.data is not None and self.data.tomorrow is not None
+
+    @property
     def native_value(self) -> float | None:
         if not self.data or not self.data.tomorrow:
             return None
@@ -291,6 +295,10 @@ class TomorrowMinPriceSensor(ElectricityPriceSensorBase):
 
     def __init__(self, coordinator: ElectricityPriceCoordinator, area: str) -> None:
         super().__init__(coordinator, area, "tomorrow_min_price", "Tomorrow Min Price")
+
+    @property
+    def available(self) -> bool:
+        return super().available and self.data is not None and self.data.tomorrow is not None
 
     @property
     def native_value(self) -> float | None:
@@ -322,6 +330,10 @@ class TomorrowMaxPriceSensor(ElectricityPriceSensorBase):
 
     def __init__(self, coordinator: ElectricityPriceCoordinator, area: str) -> None:
         super().__init__(coordinator, area, "tomorrow_max_price", "Tomorrow Max Price")
+
+    @property
+    def available(self) -> bool:
+        return super().available and self.data is not None and self.data.tomorrow is not None
 
     @property
     def native_value(self) -> float | None:

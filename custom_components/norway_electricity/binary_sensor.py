@@ -190,6 +190,10 @@ class PriceBelowThresholdBinarySensor(ElectricityBinarySensorBase):
         return self._entry.options.get(CONF_LOW_THRESHOLD, DEFAULT_LOW_THRESHOLD)
 
     @property
+    def available(self) -> bool:
+        return self._threshold is not None and super().available and self.data is not None
+
+    @property
     def is_on(self) -> bool | None:
         threshold = self._threshold
         if threshold is None:
@@ -222,6 +226,10 @@ class PriceAboveThresholdBinarySensor(ElectricityBinarySensorBase):
     @property
     def _threshold(self) -> float | None:
         return self._entry.options.get(CONF_HIGH_THRESHOLD, DEFAULT_HIGH_THRESHOLD)
+
+    @property
+    def available(self) -> bool:
+        return self._threshold is not None and super().available and self.data is not None
 
     @property
     def is_on(self) -> bool | None:

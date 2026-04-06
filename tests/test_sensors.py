@@ -238,6 +238,21 @@ class TestTomorrowAveragePriceSensor:
         sensor = TomorrowAveragePriceSensor(coord, "NO1")
         assert sensor.native_value is None
 
+    def test_available_when_tomorrow_data_present(self, coordinator):
+        sensor = TomorrowAveragePriceSensor(coordinator, "NO1")
+        assert sensor.available is True
+
+    def test_not_available_when_no_tomorrow(self, sample_today):
+        data = ElectricityPriceData(today=sample_today, tomorrow=None)
+        coord = _make_coordinator(data)
+        sensor = TomorrowAveragePriceSensor(coord, "NO1")
+        assert sensor.available is False
+
+    def test_not_available_when_no_data(self):
+        coord = _make_coordinator(None)
+        sensor = TomorrowAveragePriceSensor(coord, "NO1")
+        assert sensor.available is False
+
     def test_extra_state_attributes_has_raw_tomorrow(self, coordinator):
         sensor = TomorrowAveragePriceSensor(coordinator, "NO1")
         attrs = sensor.extra_state_attributes
@@ -272,6 +287,21 @@ class TestTomorrowMinPriceSensor:
         coord = _make_coordinator(None)
         sensor = TomorrowMinPriceSensor(coord, "NO1")
         assert sensor.native_value is None
+
+    def test_available_when_tomorrow_data_present(self, coordinator):
+        sensor = TomorrowMinPriceSensor(coordinator, "NO1")
+        assert sensor.available is True
+
+    def test_not_available_when_no_tomorrow(self, sample_today):
+        data = ElectricityPriceData(today=sample_today, tomorrow=None)
+        coord = _make_coordinator(data)
+        sensor = TomorrowMinPriceSensor(coord, "NO1")
+        assert sensor.available is False
+
+    def test_not_available_when_no_data(self):
+        coord = _make_coordinator(None)
+        sensor = TomorrowMinPriceSensor(coord, "NO1")
+        assert sensor.available is False
 
     def test_extra_state_attributes_has_hour_and_start(self, price_data):
         coord = _make_coordinator(price_data)
@@ -308,6 +338,21 @@ class TestTomorrowMaxPriceSensor:
         coord = _make_coordinator(None)
         sensor = TomorrowMaxPriceSensor(coord, "NO1")
         assert sensor.native_value is None
+
+    def test_available_when_tomorrow_data_present(self, coordinator):
+        sensor = TomorrowMaxPriceSensor(coordinator, "NO1")
+        assert sensor.available is True
+
+    def test_not_available_when_no_tomorrow(self, sample_today):
+        data = ElectricityPriceData(today=sample_today, tomorrow=None)
+        coord = _make_coordinator(data)
+        sensor = TomorrowMaxPriceSensor(coord, "NO1")
+        assert sensor.available is False
+
+    def test_not_available_when_no_data(self):
+        coord = _make_coordinator(None)
+        sensor = TomorrowMaxPriceSensor(coord, "NO1")
+        assert sensor.available is False
 
     def test_extra_state_attributes_has_hour_and_start(self, price_data):
         coord = _make_coordinator(price_data)

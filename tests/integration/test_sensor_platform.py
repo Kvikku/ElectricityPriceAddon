@@ -115,4 +115,4 @@ async def test_tomorrow_sensors_unavailable_when_no_tomorrow_data(hass):
         assert entity_id is not None
         state = hass.states.get(entity_id)
         assert state is not None
-        assert state.state in ("unavailable", "unknown"), f"Sensor {uid} should be unavailable without tomorrow data"
+        assert state.state in ("unavailable",), f"Sensor {uid} should be unavailable without tomorrow data"

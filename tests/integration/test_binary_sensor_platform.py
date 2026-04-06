@@ -87,7 +87,7 @@ async def test_threshold_sensors_unavailable_when_not_configured(hass, loaded_en
         assert entity_id is not None
         state = hass.states.get(entity_id)
         assert state is not None
-        assert state.state in ("unavailable", "unknown"), f"{uid} should be unavailable without threshold set"
+        assert state.state in ("unavailable",), f"{uid} should be unavailable without threshold set"
 
 
 @pytest.mark.asyncio

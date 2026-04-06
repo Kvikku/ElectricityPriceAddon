@@ -57,6 +57,13 @@ class _FakeCoordinatorEntity:
     def __class_getitem__(cls, item):
         return cls
 
+    @property
+    def available(self) -> bool:
+        """Mirror CoordinatorEntity.available: True when last update succeeded."""
+        if self.coordinator is None:
+            return False
+        return bool(getattr(self.coordinator, "last_update_success", True))
+
 
 update_coordinator_mock.CoordinatorEntity = _FakeCoordinatorEntity
 

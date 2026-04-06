@@ -1,0 +1,94 @@
+views:
+  - title: Electricity
+    path: electricity
+    icon: mdi:flash
+    cards:
+      - type: gauge
+        entity: sensor.p1_meter_power
+      - type: glance
+        title: Today's Prices
+        show_state: true
+        columns: 7
+        entities:
+          - entity: sensor.electricity_price_no3
+            name: Now
+            icon: mdi:flash
+          - entity: sensor.next_hour_price_no3
+            name: Next Hour
+            icon: mdi:flash-outline
+          - entity: sensor.next_2_hour_price_no3
+            name: +2 Hours
+            icon: mdi:flash-outline
+          - entity: sensor.next_3_hour_price_no3
+            name: +3 Hours
+            icon: mdi:flash-outline
+          - entity: sensor.min_price_no3
+            name: Lowest
+            icon: mdi:arrow-down-bold
+          - entity: sensor.max_price_no3
+            name: Highest
+            icon: mdi:arrow-up-bold
+          - entity: sensor.average_price_no3
+            name: Average
+            icon: mdi:chart-line
+      - type: custom:apexcharts-card
+        header:
+          title: Electricity Prices — Previous & Next 12 Hours
+          show: true
+        graph_span: 24h
+        span:
+          start: hour
+          offset: '-12h'
+        now:
+          show: true
+          label: Now
+        yaxis:
+          - min: 0
+            apex_config:
+              forceNiceScale: true
+        apex_config:
+          chart:
+            height: 300
+          tooltip:
+            'y':
+              formatter: |
+                EVAL:function(value) {
+                  if (value == null) return '';
+                  return value.toFixed(2) + ' NOK/kWh';
+                }
+        series:
+          - entity: sensor.electricity_price_no3
+            data_generator: |
+              const today = entity.attributes.raw_today || [];
+              const tomorrow = entity.attributes.raw_tomorrow || [];
+              const all = [...today, ...tomorrow];
+              return all.map(e => [
+                new Date(e.start).getTime(), e.price
+              ]);
+            type: column
+            name: Price
+            color_threshold:
+              - value: 0
+                color: '#4CAF50'
+              - value: 0.3
+                color: '#8BC34A'
+              - value: 0.5
+                color: '#FFC107'
+              - value: 0.8
+                color: '#FF9800'
+              - value: 1.1
+                color: '#F44336'
+          - entity: sensor.electricity_price_no3
+            data_generator: |
+              const data = entity.attributes.raw_today || [];
+              if (data.length === 0) return [];
+              const avg =
+                data.reduce((sum, e) => sum + e.price, 0) / data.length;
+              return data.map(e => [
+                new Date(e.start).getTime(), avg
+              ]);
+            name: Average
+            type: line
+            color: '#9E9E9E'
+            stroke_width: 2
+            extend_to: end

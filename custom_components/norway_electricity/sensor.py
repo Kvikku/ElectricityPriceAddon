@@ -29,6 +29,8 @@ async def async_setup_entry(
     sensors = [
         CurrentPriceSensor(coordinator, area),
         NextHourPriceSensor(coordinator, area),
+        Next2HourPriceSensor(coordinator, area),
+        Next3HourPriceSensor(coordinator, area),
         AveragePriceSensor(coordinator, area),
         MinPriceSensor(coordinator, area),
         MaxPriceSensor(coordinator, area),
@@ -141,6 +143,70 @@ class NextHourPriceSensor(ElectricityPriceSensorBase):
         if not self.data:
             return {}
         entry = self.data.next_hour_price()
+        if not entry:
+            return {}
+        return {
+            "price_eur": entry["price_eur"],
+            "hour": entry["hour"],
+            "start": entry["start"].isoformat(),
+        }
+
+
+class Next2HourPriceSensor(ElectricityPriceSensorBase):
+    """Sensor showing the electricity price 2 hours from now."""
+
+    _attr_device_class = SensorDeviceClass.MONETARY
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_native_unit_of_measurement = CURRENCY_NOK
+    _attr_icon = "mdi:flash-outline"
+
+    def __init__(self, coordinator: ElectricityPriceCoordinator, area: str) -> None:
+        super().__init__(coordinator, area, "next_2_hour_price", "Next 2 Hour Price")
+
+    @property
+    def native_value(self) -> float | None:
+        if not self.data:
+            return None
+        entry = self.data.future_hour_price(2)
+        return entry["price"] if entry else None
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        if not self.data:
+            return {}
+        entry = self.data.future_hour_price(2)
+        if not entry:
+            return {}
+        return {
+            "price_eur": entry["price_eur"],
+            "hour": entry["hour"],
+            "start": entry["start"].isoformat(),
+        }
+
+
+class Next3HourPriceSensor(ElectricityPriceSensorBase):
+    """Sensor showing the electricity price 3 hours from now."""
+
+    _attr_device_class = SensorDeviceClass.MONETARY
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_native_unit_of_measurement = CURRENCY_NOK
+    _attr_icon = "mdi:flash-outline"
+
+    def __init__(self, coordinator: ElectricityPriceCoordinator, area: str) -> None:
+        super().__init__(coordinator, area, "next_3_hour_price", "Next 3 Hour Price")
+
+    @property
+    def native_value(self) -> float | None:
+        if not self.data:
+            return None
+        entry = self.data.future_hour_price(3)
+        return entry["price"] if entry else None
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        if not self.data:
+            return {}
+        entry = self.data.future_hour_price(3)
         if not entry:
             return {}
         return {

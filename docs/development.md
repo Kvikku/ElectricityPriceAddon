@@ -1,6 +1,6 @@
 # Development Guide
 
-Guide for contributing to the **Norway Electricity Prices** Home Assistant
+Guide for contributing to the **Nordic Electricity Prices** Home Assistant
 integration.
 
 ## Prerequisites
@@ -35,29 +35,44 @@ ElectricityPriceAddon/
 │       ├── const.py             # Constants & defaults
 │       ├── coordinator.py       # API fetching & data model
 │       ├── config_flow.py       # UI configuration
-│       ├── sensor.py            # Sensor entities
-│       ├── binary_sensor.py     # Binary sensor entities
+│       ├── sensor.py            # Sensor entities (9 per area)
+│       ├── binary_sensor.py     # Binary sensor entities (4 per area)
 │       ├── manifest.json        # HA integration manifest
 │       ├── strings.json         # English UI strings
 │       └── translations/        # Localised strings
 │           ├── en.json
 │           └── nb.json
 ├── tests/
-│   ├── conftest.py              # HA mocks for standalone testing
-│   └── test_coordinator.py      # Unit tests
+│   ├── conftest.py              # HA mocks for standalone unit tests
+│   ├── test_coordinator.py      # Unit tests — data model
+│   ├── test_sensors.py          # Unit tests — sensor entities
+│   ├── test_binary_sensors.py   # Unit tests — binary sensor entities
+│   └── integration/             # Integration tests (require pytest-homeassistant-custom-component)
+│       ├── conftest.py
+│       ├── test_config_flow.py
+│       ├── test_sensor_platform.py
+│       └── test_binary_sensor_platform.py
+├── docs/                        # Extended documentation
+├── examples/                    # Ready-to-use dashboard & automation YAML
 ├── .github/
 │   └── workflows/
+│       ├── ci.yml               # Lint + unit tests on PR/push
 │       ├── hacs-validate.yaml   # HACS validation on PR/push
 │       └── release.yaml         # Release on version tag
 ├── hacs.json                    # HACS metadata
 ├── pytest.ini                   # Pytest configuration
+├── requirements_test.txt        # Unit test dependencies
+├── requirements_integration.txt # Integration test dependencies
 └── README.md
 ```
 
 ## Running Tests
 
 ```bash
-# Run all tests
+# Install unit test dependencies
+pip install -r requirements_test.txt
+
+# Run all unit tests
 pytest tests/ -v
 
 # Run a specific test class
@@ -69,6 +84,23 @@ pytest tests/test_coordinator.py::TestCurrentPrice::test_returns_correct_hour -v
 
 Tests mock the entire `homeassistant` package (see `tests/conftest.py`), so
 you do **not** need Home Assistant installed to run them.
+
+### Integration Tests
+
+Integration tests require `pytest-homeassistant-custom-component` and run
+against a real in-process Home Assistant instance:
+
+```bash
+# Install integration test dependencies
+pip install -r requirements_integration.txt
+
+# Run integration tests explicitly (excluded from default pytest run)
+pytest tests/integration/ -v
+```
+
+> ⚠️ Do **not** mix the two requirements files in the same environment — the
+> integration test package includes its own HA stubs that conflict with the
+> `sys.modules` mocking used by unit tests.
 
 ## Linting & Formatting
 
@@ -152,7 +184,15 @@ Alternatively, use a
 
 ## Continuous Integration
 
-### HACS Validation (on every PR / push to main)
+### CI (on every PR / push to master)
+
+The `.github/workflows/ci.yml` workflow:
+
+1. Runs `ruff check` + `ruff format --check` for linting/formatting.
+2. Runs `pytest tests/ -v` (unit tests, Python 3.12 & 3.13).
+3. Runs `pytest tests/integration/ -v` (integration tests, Python 3.12 & 3.13) after installing `requirements_integration.txt`.
+
+### HACS Validation (on every PR / push to master)
 
 The `.github/workflows/hacs-validate.yaml` workflow runs the official
 [HACS action](https://github.com/hacs/action) to ensure the integration

@@ -1,7 +1,7 @@
 # Automation Examples
 
-Ready-to-use automation blueprints for the **Norway Electricity Prices**
-integration. Replace `no5` with your price area code (e.g., `no1`, `no2`).
+Ready-to-use automation blueprints for the **Nordic Electricity Prices**
+integration. Replace `no5` with your price area code (e.g., `no1`, `se3`, `fi`).
 
 ---
 
@@ -41,6 +41,42 @@ automation:
             Prices for tomorrow are now available.
             Cheapest window:
             {{ state_attr('binary_sensor.cheapest_hours_no5', 'best_consecutive_window') }}
+```
+
+### Notify When Price Drops Below Threshold
+
+```yaml
+automation:
+  - alias: "Price below threshold alert"
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.price_below_threshold_no5
+        to: "on"
+    action:
+      - service: notify.mobile_app_your_phone
+        data:
+          title: "💚 Price below threshold!"
+          message: >
+            Current price: {{ state_attr('binary_sensor.price_below_threshold_no5', 'current_price') }} NOK/kWh
+            (threshold: {{ state_attr('binary_sensor.price_below_threshold_no5', 'threshold') }} NOK/kWh)
+```
+
+### Notify When Price Rises Above Threshold
+
+```yaml
+automation:
+  - alias: "Price above threshold alert"
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.price_above_threshold_no5
+        to: "on"
+    action:
+      - service: notify.mobile_app_your_phone
+        data:
+          title: "🔴 Price above threshold!"
+          message: >
+            Current price: {{ state_attr('binary_sensor.price_above_threshold_no5', 'current_price') }} NOK/kWh
+            (threshold: {{ state_attr('binary_sensor.price_above_threshold_no5', 'threshold') }} NOK/kWh)
 ```
 
 ### Daily Price Summary

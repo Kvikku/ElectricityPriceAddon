@@ -1,7 +1,7 @@
 # Architecture
 
 This document describes the internal architecture and data flow of the
-**Norway Electricity Prices** Home Assistant integration.
+**Nordic Electricity Prices** Home Assistant integration.
 
 ## High-Level Overview
 
@@ -79,8 +79,8 @@ Key methods:
 |--------|-------------|
 | `current_price(now)` | Entry for the current hour |
 | `next_hour_price(now)` | Entry for the next hour |
-| `average_price()` | Mean price for today |
-| `min_entry()` / `max_entry()` | Cheapest / most expensive entry |
+| `average_price(entries)` | Mean price for today (or a custom list, e.g. `data.tomorrow`) |
+| `min_entry(entries)` / `max_entry(entries)` | Cheapest / most expensive entry (today or custom list) |
 | `price_level(now)` | Categorical level based on percentile ranking |
 | `cheapest_hours(n)` | N cheapest hours today |
 | `most_expensive_hours(n)` | N most expensive hours today |
@@ -88,7 +88,7 @@ Key methods:
 
 ### Sensor Platform (`sensor.py`)
 
-Six sensor entities per configured price area:
+Nine sensor entities per configured price area:
 
 | Class | Key | Description |
 |-------|-----|-------------|
@@ -98,29 +98,42 @@ Six sensor entities per configured price area:
 | `MinPriceSensor` | `min_price` | Today's lowest price |
 | `MaxPriceSensor` | `max_price` | Today's highest price |
 | `PriceLevelSensor` | `price_level` | Categorical level string |
+| `TomorrowAveragePriceSensor` | `tomorrow_average_price` | Tomorrow's average (unavailable until ~13:00 CET) |
+| `TomorrowMinPriceSensor` | `tomorrow_min_price` | Tomorrow's lowest price (unavailable until ~13:00 CET) |
+| `TomorrowMaxPriceSensor` | `tomorrow_max_price` | Tomorrow's highest price (unavailable until ~13:00 CET) |
 
 All monetary sensors use `SensorDeviceClass.MONETARY` and report in
 `NOK/kWh`.
 
+The three tomorrow sensors override the `available` property: they return
+`False` (state = `unavailable`) when `coordinator.data.tomorrow is None`,
+and `True` once tomorrow's prices have been fetched.
+
 ### Binary Sensor Platform (`binary_sensor.py`)
 
-Two binary sensors per configured price area:
+Four binary sensors per configured price area:
 
 | Class | Key | Description |
 |-------|-----|-------------|
 | `CheapestHoursBinarySensor` | `cheapest_hours` | ON during the N cheapest hours |
 | `ExpensiveHoursBinarySensor` | `expensive_hours` | ON during the N most expensive hours |
+| `PriceBelowThresholdBinarySensor` | `price_below_threshold` | ON when price < configured threshold; `unavailable` when no threshold set |
+| `PriceAboveThresholdBinarySensor` | `price_above_threshold` | ON when price > configured threshold; `unavailable` when no threshold set |
 
 The cheapest-hours sensor also exposes a `best_consecutive_window` attribute
 showing the optimal charging window.
 
+The threshold sensors override `available`: they return `False` when the
+threshold option is `None` (disabled) or when coordinator data is missing.
+
 ### Config Flow (`config_flow.py`)
 
-- **Setup step**: User selects a price area (NO1–NO5). Duplicate areas are
+- **Setup step**: User selects a price area from all supported Nordpool
+  bidding zones (NO1–NO5, SE1–SE4, DK1–DK2, FI). Duplicate areas are
   rejected via `async_set_unique_id`.
-- **Options flow**: Users can adjust VAT toggle, number of cheap hours, and
-  number of expensive hours (1–12). Changes trigger a full integration
-  reload.
+- **Options flow**: Users can adjust VAT toggle, number of cheap/expensive
+  hours (1–12), and optional price thresholds (low and high, in NOK/kWh).
+  Changes trigger a full integration reload.
 
 ## Price Level Algorithm
 

@@ -118,6 +118,33 @@ class TestNextHourPrice:
         assert entry["start"].day == 21
 
 
+class TestFutureHourPrice:
+    def test_2_hours_ahead(self, data):
+        now = datetime.fromisoformat("2026-03-20T10:30:00+01:00")
+        entry = data.future_hour_price(2, now)
+        assert entry is not None
+        assert entry["hour"] == 12
+        assert entry["price"] == 0.25
+
+    def test_3_hours_ahead(self, data):
+        now = datetime.fromisoformat("2026-03-20T10:30:00+01:00")
+        entry = data.future_hour_price(3, now)
+        assert entry is not None
+        assert entry["hour"] == 13
+        assert entry["price"] == 0.20
+
+    def test_wraps_to_tomorrow(self, data):
+        now = datetime.fromisoformat("2026-03-20T22:30:00+01:00")
+        entry = data.future_hour_price(3, now)
+        assert entry is not None
+        assert entry["start"].day == 21
+        assert entry["hour"] == 1
+
+    def test_returns_none_outside_range(self, data_today_only):
+        now = datetime.fromisoformat("2026-03-20T23:00:00+01:00")
+        assert data_today_only.future_hour_price(3, now) is None
+
+
 class TestAveragePrice:
     def test_average_today(self, data):
         avg = data.average_price()

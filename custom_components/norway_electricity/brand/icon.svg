@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <clipPath id="rounded">
+      <rect x="0" y="0" width="256" height="256" rx="32" ry="32"/>
+    </clipPath>
+    <!-- Aurora / Northern Lights gradient -->
+    <linearGradient id="auroraGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1A0533"/>
+      <stop offset="30%" stop-color="#0B3D2E"/>
+      <stop offset="60%" stop-color="#00C9A7"/>
+      <stop offset="80%" stop-color="#845EC2"/>
+      <stop offset="100%" stop-color="#1A0533"/>
+    </linearGradient>
+    <linearGradient id="boltAurora" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#00FFC6"/>
+      <stop offset="40%" stop-color="#00E5A0"/>
+      <stop offset="70%" stop-color="#7B61FF"/>
+      <stop offset="100%" stop-color="#C77DFF"/>
+    </linearGradient>
+    <linearGradient id="boltGlow" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#00FFC6"/>
+      <stop offset="100%" stop-color="#7B61FF"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="6" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="softGlow">
+      <feGaussianBlur stdDeviation="12" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <g clip-path="url(#rounded)">
+    <!-- Dark night sky background -->
+    <rect x="0" y="0" width="256" height="256" fill="#0A0A1A"/>
+    
+    <!-- Aurora waves in the background -->
+    <ellipse cx="128" cy="60" rx="160" ry="30" fill="#00C9A7" opacity="0.12" filter="url(#softGlow)"/>
+    <ellipse cx="100" cy="90" rx="140" ry="25" fill="#7B61FF" opacity="0.1" filter="url(#softGlow)"/>
+    <ellipse cx="160" cy="75" rx="120" ry="20" fill="#00FFC6" opacity="0.08" filter="url(#softGlow)"/>
+    <ellipse cx="128" cy="110" rx="100" ry="18" fill="#845EC2" opacity="0.07" filter="url(#softGlow)"/>
+    
+    <!-- Stars -->
+    <circle cx="30" cy="28" r="1.2" fill="#FFFFFF" opacity="0.7"/>
+    <circle cx="220" cy="40" r="1" fill="#FFFFFF" opacity="0.6"/>
+    <circle cx="180" cy="20" r="1.4" fill="#FFFFFF" opacity="0.8"/>
+    <circle cx="60" cy="50" r="0.8" fill="#FFFFFF" opacity="0.5"/>
+    <circle cx="200" cy="70" r="1" fill="#FFFFFF" opacity="0.6"/>
+    <circle cx="42" cy="85" r="0.9" fill="#FFFFFF" opacity="0.5"/>
+    <circle cx="230" cy="110" r="1.1" fill="#FFFFFF" opacity="0.4"/>
+    <circle cx="24" cy="140" r="0.8" fill="#FFFFFF" opacity="0.4"/>
+    <circle cx="240" cy="170" r="1" fill="#FFFFFF" opacity="0.3"/>
+    
+    <!-- Glow behind bolt -->
+    <polygon points="152,18 92,122 132,122 102,238 176,120 136,120" fill="url(#boltGlow)" opacity="0.25" filter="url(#softGlow)"/>
+    
+    <!-- Lightning bolt with aurora gradient -->
+    <polygon points="152,18 92,122 132,122 102,238 176,120 136,120" fill="url(#boltAurora)" filter="url(#glow)"/>
+    
+    <!-- White inner highlight on bolt -->
+    <polygon points="144,40 104,118 130,118 108,218 164,124 138,124" fill="#FFFFFF" opacity="0.2"/>
+  </g>
+</svg>

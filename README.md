@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="custom_components/norway_electricity/brand/logo@2x.png" alt="Norway Electricity Prices" width="256">
+</p>
+
 # Norway Electricity Prices — Home Assistant Integration
 
 [![HACS Validation](https://github.com/Kvikku/ElectricityPriceAddon/actions/workflows/hacs-validate.yaml/badge.svg)](https://github.com/Kvikku/ElectricityPriceAddon/actions/workflows/hacs-validate.yaml)

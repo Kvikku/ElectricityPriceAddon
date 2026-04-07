@@ -16,10 +16,10 @@ views:
           - entity: sensor.next_hour_price_no3
             name: Next Hour
             icon: mdi:flash-outline
-          - entity: sensor.next_2_hour_price_no3
+          - entity: sensor.electricity_prices_no3_next_2_hour_price_no3
             name: +2 Hours
             icon: mdi:flash-outline
-          - entity: sensor.next_3_hour_price_no3
+          - entity: sensor.electricity_prices_no3_next_3_hour_price_no3
             name: +3 Hours
             icon: mdi:flash-outline
           - entity: sensor.min_price_no3

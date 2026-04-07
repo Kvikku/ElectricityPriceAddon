@@ -92,6 +92,7 @@ class CurrentPriceSensor(ElectricityPriceSensorBase):
     _attr_device_class = SensorDeviceClass.MONETARY
     _attr_state_class = SensorStateClass.MEASUREMENT
     _attr_native_unit_of_measurement = CURRENCY_NOK
+    _attr_suggested_display_precision = 2
     _attr_icon = "mdi:flash"
 
     def __init__(self, coordinator: ElectricityPriceCoordinator, area: str) -> None:
@@ -129,6 +130,7 @@ class NextHourPriceSensor(ElectricityPriceSensorBase):
     _attr_device_class = SensorDeviceClass.MONETARY
     _attr_state_class = SensorStateClass.MEASUREMENT
     _attr_native_unit_of_measurement = CURRENCY_NOK
+    _attr_suggested_display_precision = 2
     _attr_icon = "mdi:flash-outline"
 
     def __init__(self, coordinator: ElectricityPriceCoordinator, area: str) -> None:
@@ -161,6 +163,7 @@ class Next2HourPriceSensor(ElectricityPriceSensorBase):
     _attr_device_class = SensorDeviceClass.MONETARY
     _attr_state_class = SensorStateClass.MEASUREMENT
     _attr_native_unit_of_measurement = CURRENCY_NOK
+    _attr_suggested_display_precision = 2
     _attr_icon = "mdi:flash-outline"
 
     def __init__(self, coordinator: ElectricityPriceCoordinator, area: str) -> None:
@@ -193,6 +196,7 @@ class Next3HourPriceSensor(ElectricityPriceSensorBase):
     _attr_device_class = SensorDeviceClass.MONETARY
     _attr_state_class = SensorStateClass.MEASUREMENT
     _attr_native_unit_of_measurement = CURRENCY_NOK
+    _attr_suggested_display_precision = 2
     _attr_icon = "mdi:flash-outline"
 
     def __init__(self, coordinator: ElectricityPriceCoordinator, area: str) -> None:
@@ -225,6 +229,7 @@ class AveragePriceSensor(ElectricityPriceSensorBase):
     _attr_device_class = SensorDeviceClass.MONETARY
     _attr_state_class = SensorStateClass.MEASUREMENT
     _attr_native_unit_of_measurement = CURRENCY_NOK
+    _attr_suggested_display_precision = 2
     _attr_icon = "mdi:chart-line"
 
     def __init__(self, coordinator: ElectricityPriceCoordinator, area: str) -> None:
@@ -243,6 +248,7 @@ class MinPriceSensor(ElectricityPriceSensorBase):
     _attr_device_class = SensorDeviceClass.MONETARY
     _attr_state_class = SensorStateClass.MEASUREMENT
     _attr_native_unit_of_measurement = CURRENCY_NOK
+    _attr_suggested_display_precision = 2
     _attr_icon = "mdi:arrow-down-bold"
 
     def __init__(self, coordinator: ElectricityPriceCoordinator, area: str) -> None:
@@ -274,6 +280,7 @@ class MaxPriceSensor(ElectricityPriceSensorBase):
     _attr_device_class = SensorDeviceClass.MONETARY
     _attr_state_class = SensorStateClass.MEASUREMENT
     _attr_native_unit_of_measurement = CURRENCY_NOK
+    _attr_suggested_display_precision = 2
     _attr_icon = "mdi:arrow-up-bold"
 
     def __init__(self, coordinator: ElectricityPriceCoordinator, area: str) -> None:
@@ -328,6 +335,7 @@ class TomorrowAveragePriceSensor(ElectricityPriceSensorBase):
     _attr_device_class = SensorDeviceClass.MONETARY
     _attr_state_class = SensorStateClass.MEASUREMENT
     _attr_native_unit_of_measurement = CURRENCY_NOK
+    _attr_suggested_display_precision = 2
     _attr_icon = "mdi:chart-line"
 
     def __init__(self, coordinator: ElectricityPriceCoordinator, area: str) -> None:
@@ -357,6 +365,7 @@ class TomorrowMinPriceSensor(ElectricityPriceSensorBase):
     _attr_device_class = SensorDeviceClass.MONETARY
     _attr_state_class = SensorStateClass.MEASUREMENT
     _attr_native_unit_of_measurement = CURRENCY_NOK
+    _attr_suggested_display_precision = 2
     _attr_icon = "mdi:arrow-down-bold"
 
     def __init__(self, coordinator: ElectricityPriceCoordinator, area: str) -> None:
@@ -392,6 +401,7 @@ class TomorrowMaxPriceSensor(ElectricityPriceSensorBase):
     _attr_device_class = SensorDeviceClass.MONETARY
     _attr_state_class = SensorStateClass.MEASUREMENT
     _attr_native_unit_of_measurement = CURRENCY_NOK
+    _attr_suggested_display_precision = 2
     _attr_icon = "mdi:arrow-up-bold"
 
     def __init__(self, coordinator: ElectricityPriceCoordinator, area: str) -> None:

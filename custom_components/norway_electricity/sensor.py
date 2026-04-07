@@ -44,6 +44,7 @@ class ElectricityPriceSensorBase(CoordinatorEntity[ElectricityPriceCoordinator],
     """Base class for electricity price sensors."""
 
     _attr_has_entity_name = True
+    _attr_suggested_display_precision = 2
 
     def __init__(
         self,

@@ -15,8 +15,10 @@ from .const import (
     CONF_AREA,
     CONF_CHEAP_HOURS,
     CONF_EXPENSIVE_HOURS,
+    CONF_PRICE_THRESHOLD,
     DEFAULT_CHEAP_HOURS,
     DEFAULT_EXPENSIVE_HOURS,
+    DEFAULT_PRICE_THRESHOLD,
     DOMAIN,
     PRICE_AREAS,
 )
@@ -36,6 +38,8 @@ async def async_setup_entry(
         [
             CheapestHoursBinarySensor(coordinator, entry, area),
             ExpensiveHoursBinarySensor(coordinator, entry, area),
+            PriceBelowThresholdBinarySensor(coordinator, entry, area),
+            PriceAboveThresholdBinarySensor(coordinator, entry, area),
         ],
         update_before_add=True,
     )
@@ -125,6 +129,16 @@ class CheapestHoursBinarySensor(ElectricityBinarySensorBase):
                 "average_price": round(sum(e["price"] for e in window) / len(window), 4),
             }
 
+        # Best consecutive window for tomorrow only
+        tomorrow_window = self.data.best_consecutive_window_tomorrow(self._num_hours)
+        if tomorrow_window:
+            attrs["best_consecutive_window_tomorrow"] = {
+                "start": tomorrow_window[0]["start"].isoformat(),
+                "end": tomorrow_window[-1]["end"].isoformat(),
+                "hours": [{"hour": e["hour"], "price": e["price"]} for e in tomorrow_window],
+                "average_price": round(sum(e["price"] for e in tomorrow_window) / len(tomorrow_window), 4),
+            }
+
         return attrs
 
 
@@ -169,3 +183,65 @@ class ExpensiveHoursBinarySensor(ElectricityBinarySensorBase):
                 for e in sorted_by_time
             ],
         }
+
+
+class PriceBelowThresholdBinarySensor(ElectricityBinarySensorBase):
+    """Binary sensor that is ON when the current price is below the configured threshold."""
+
+    _attr_icon = "mdi:arrow-down-bold-circle"
+
+    def __init__(self, coordinator: ElectricityPriceCoordinator, entry: ConfigEntry, area: str) -> None:
+        super().__init__(coordinator, entry, area, "price_below_threshold", "Price Below Threshold")
+
+    @property
+    def _threshold(self) -> float:
+        return self._entry.options.get(CONF_PRICE_THRESHOLD, DEFAULT_PRICE_THRESHOLD)
+
+    @property
+    def is_on(self) -> bool | None:
+        if not self.data:
+            return None
+        current = self.data.current_price()
+        if not current:
+            return None
+        return current["price"] < self._threshold
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        attrs: dict = {"threshold": self._threshold}
+        if self.data:
+            current = self.data.current_price()
+            if current:
+                attrs["current_price"] = current["price"]
+        return attrs
+
+
+class PriceAboveThresholdBinarySensor(ElectricityBinarySensorBase):
+    """Binary sensor that is ON when the current price is above the configured threshold."""
+
+    _attr_icon = "mdi:arrow-up-bold-circle"
+
+    def __init__(self, coordinator: ElectricityPriceCoordinator, entry: ConfigEntry, area: str) -> None:
+        super().__init__(coordinator, entry, area, "price_above_threshold", "Price Above Threshold")
+
+    @property
+    def _threshold(self) -> float:
+        return self._entry.options.get(CONF_PRICE_THRESHOLD, DEFAULT_PRICE_THRESHOLD)
+
+    @property
+    def is_on(self) -> bool | None:
+        if not self.data:
+            return None
+        current = self.data.current_price()
+        if not current:
+            return None
+        return current["price"] > self._threshold
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        attrs: dict = {"threshold": self._threshold}
+        if self.data:
+            current = self.data.current_price()
+            if current:
+                attrs["current_price"] = current["price"]
+        return attrs

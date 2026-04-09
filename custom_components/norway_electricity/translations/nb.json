@@ -20,7 +20,8 @@
         "data": {
           "vat": "Inkluder MVA (25 %)",
           "cheap_hours": "Antall billigste timer",
-          "expensive_hours": "Antall dyreste timer"
+          "expensive_hours": "Antall dyreste timer",
+          "price_threshold": "Prisgrense (NOK/kWh)"
         }
       }
     }

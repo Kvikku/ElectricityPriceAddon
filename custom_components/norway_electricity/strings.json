@@ -20,7 +20,8 @@
         "data": {
           "vat": "Include VAT (25%)",
           "cheap_hours": "Number of cheapest hours",
-          "expensive_hours": "Number of most expensive hours"
+          "expensive_hours": "Number of most expensive hours",
+          "price_threshold": "Price threshold (NOK/kWh)"
         }
       }
     }

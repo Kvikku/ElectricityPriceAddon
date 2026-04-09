@@ -122,7 +122,17 @@ class ElectricityPriceData:
 
     def best_consecutive_window(self, hours: int) -> list[PriceEntry] | None:
         """Find the cheapest consecutive block of N hours from all available prices."""
-        prices = self.all_prices
+        return self._find_best_window(self.all_prices, hours)
+
+    def best_consecutive_window_tomorrow(self, hours: int) -> list[PriceEntry] | None:
+        """Find the cheapest consecutive block of N hours from tomorrow's prices only."""
+        if not self.tomorrow:
+            return None
+        return self._find_best_window(self.tomorrow, hours)
+
+    @staticmethod
+    def _find_best_window(prices: list[PriceEntry], hours: int) -> list[PriceEntry] | None:
+        """Find the cheapest consecutive block of N hours from a list of prices."""
         if len(prices) < hours:
             return None
 

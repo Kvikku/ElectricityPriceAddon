@@ -18,21 +18,7 @@ five Norwegian price areas (NO1–NO5).
 
 ---
 
-## What's New in v1.2.0
 
-**New sensors:**
-- `binary_sensor.price_below_threshold_{area}` — ON when the current price is below your configured threshold
-- `binary_sensor.price_above_threshold_{area}` — ON when the current price is above your configured threshold
-- New **Price threshold (NOK/kWh)** option in integration settings (default: 1.0, range: 0–50)
-
-**New attributes:**
-- `best_consecutive_window_tomorrow` on the cheapest hours binary sensor — cheapest consecutive block using only tomorrow's prices (available after ~13:00 CET)
-
-**New documentation:**
-- 6 advanced notification automations: price drop alert, price spike warning, tomorrow planning, price level change, morning briefing, and threshold alerts
-- Per-user notification preferences guide using input_boolean helpers
-
----
 
 ## Table of Contents
 

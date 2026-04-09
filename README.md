@@ -18,6 +18,22 @@ five Norwegian price areas (NO1–NO5).
 
 ---
 
+## What's New in v1.2.0
+
+**New sensors:**
+- `binary_sensor.price_below_threshold_{area}` — ON when the current price is below your configured threshold
+- `binary_sensor.price_above_threshold_{area}` — ON when the current price is above your configured threshold
+- New **Price threshold (NOK/kWh)** option in integration settings (default: 1.0, range: 0–50)
+
+**New attributes:**
+- `best_consecutive_window_tomorrow` on the cheapest hours binary sensor — cheapest consecutive block using only tomorrow's prices (available after ~13:00 CET)
+
+**New documentation:**
+- 6 advanced notification automations: price drop alert, price spike warning, tomorrow planning, price level change, morning briefing, and threshold alerts
+- Per-user notification preferences guide using input_boolean helpers
+
+---
+
 ## Table of Contents
 
 - [Features](#features)
@@ -107,12 +123,13 @@ After adding the integration, click **Configure** to adjust:
 | Include VAT (25%) | ✅ On | — | Add 25% MVA to spot prices |
 | Cheapest hours | 6 | 1–12 | Number of hours considered "cheap" |
 | Most expensive hours | 6 | 1–12 | Number of hours considered "expensive" |
+| Price threshold | 1.0 | 0–50 | NOK/kWh limit for threshold binary sensors |
 
 ---
 
 ## Sensors & Entities
 
-Each price area creates **8 entities**. Replace `{area}` with the
+Each price area creates **10 entities**. Replace `{area}` with the
 **lowercase** area code: `no1`, `no2`, `no3`, `no4`, or `no5`.
 
 | Entity | Type | State | Key Attributes |
@@ -123,8 +140,10 @@ Each price area creates **8 entities**. Replace `{area}` with the
 | `sensor.min_price_no5` | Sensor | Today's lowest | `hour` of cheapest |
 | `sensor.max_price_no5` | Sensor | Today's highest | `hour` of most expensive |
 | `sensor.price_level_no5` | Sensor | Category string | — |
-| `binary_sensor.cheapest_hours_no5` | Binary | ON if cheap now | `cheapest_hours`, `best_consecutive_window` |
+| `binary_sensor.cheapest_hours_no5` | Binary | ON if cheap now | `cheapest_hours`, `best_consecutive_window`, `best_consecutive_window_tomorrow` |
 | `binary_sensor.expensive_hours_no5` | Binary | ON if expensive now | `expensive_hours` |
+| `binary_sensor.price_below_threshold_no5` | Binary | ON if below threshold | `threshold`, `current_price` |
+| `binary_sensor.price_above_threshold_no5` | Binary | ON if above threshold | `threshold`, `current_price` |
 
 📖 **Full details:** [Sensor Reference](docs/sensors.md)
 

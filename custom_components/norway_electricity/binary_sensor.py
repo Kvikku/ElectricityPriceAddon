@@ -131,6 +131,16 @@ class CheapestHoursBinarySensor(ElectricityBinarySensorBase):
                 "average_price": round(sum(e["price"] for e in window) / len(window), 4),
             }
 
+        # Best consecutive window for tomorrow only
+        tomorrow_window = self.data.best_consecutive_window_tomorrow(self._num_hours)
+        if tomorrow_window:
+            attrs["best_consecutive_window_tomorrow"] = {
+                "start": tomorrow_window[0]["start"].isoformat(),
+                "end": tomorrow_window[-1]["end"].isoformat(),
+                "hours": [{"hour": e["hour"], "price": e["price"]} for e in tomorrow_window],
+                "average_price": round(sum(e["price"] for e in tomorrow_window) / len(tomorrow_window), 4),
+            }
+
         return attrs
 
 

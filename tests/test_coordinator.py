@@ -223,6 +223,22 @@ class TestBestConsecutiveWindow:
         assert len(window) == 6
 
 
+class TestBestConsecutiveWindowTomorrow:
+    def test_finds_cheapest_block_tomorrow(self, data):
+        window = data.best_consecutive_window_tomorrow(4)
+        assert window is not None
+        assert len(window) == 4
+        # All hours should be from tomorrow (2026-03-21)
+        for entry in window:
+            assert entry["start"].day == 21
+
+    def test_returns_none_when_no_tomorrow(self, data_today_only):
+        assert data_today_only.best_consecutive_window_tomorrow(4) is None
+
+    def test_returns_none_when_insufficient_hours(self, data):
+        assert data.best_consecutive_window_tomorrow(25) is None
+
+
 class TestParsePrices:
     def test_parse_roundtrip(self):
         """Test that the coordinator parses API format correctly."""

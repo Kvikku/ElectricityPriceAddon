@@ -45,6 +45,7 @@ class NorwayElectricityConfigFlow(ConfigFlow, domain=DOMAIN):
                     CONF_VAT: DEFAULT_VAT,
                     CONF_CHEAP_HOURS: DEFAULT_CHEAP_HOURS,
                     CONF_EXPENSIVE_HOURS: DEFAULT_EXPENSIVE_HOURS,
+                    CONF_PRICE_THRESHOLD: DEFAULT_PRICE_THRESHOLD,
                 },
             )
 

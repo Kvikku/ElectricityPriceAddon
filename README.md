@@ -18,6 +18,8 @@ Nordpool bidding zones (Norway, Sweden, Denmark, and Finland).
 
 ---
 
+
+
 ## Table of Contents
 
 - [Features](#features)

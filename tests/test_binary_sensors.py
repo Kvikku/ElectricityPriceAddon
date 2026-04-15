@@ -44,10 +44,14 @@ def _make_coordinator(data: ElectricityPriceData | None = None) -> MagicMock:
     return coord
 
 
-def _make_entry(cheap_hours: int = 6, expensive_hours: int = 6) -> MagicMock:
+def _make_entry(cheap_hours: int = 6, expensive_hours: int = 6, price_threshold: float = 1.0) -> MagicMock:
     """Create a mock config entry with options."""
     entry = MagicMock()
-    entry.options = {"cheap_hours": cheap_hours, "expensive_hours": expensive_hours}
+    entry.options = {
+        "cheap_hours": cheap_hours,
+        "expensive_hours": expensive_hours,
+        "price_threshold": price_threshold,
+    }
     return entry
 
 

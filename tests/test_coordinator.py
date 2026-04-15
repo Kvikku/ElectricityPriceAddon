@@ -276,3 +276,37 @@ class TestParsePrices:
         assert entries[0]["price"] == pytest.approx(0.625, rel=1e-3)
         assert entries[0]["hour"] == 0
         assert entries[1]["hour"] == 1
+
+    @pytest.mark.parametrize(
+        "area",
+        [
+            # Norway
+            "NO1",
+            "NO2",
+            "NO3",
+            "NO4",
+            "NO5",
+            # Sweden
+            "SE1",
+            "SE2",
+            "SE3",
+            "SE4",
+            # Denmark
+            "DK1",
+            "DK2",
+            # Finland
+            "FI",
+        ],
+    )
+    def test_all_nordic_areas_in_price_areas(self, area):
+        """Verify every supported Nordic area code is listed in PRICE_AREAS."""
+        from custom_components.norway_electricity.const import PRICE_AREAS
+
+        assert area in PRICE_AREAS, f"{area} is missing from PRICE_AREAS"
+
+    def test_no_extra_unknown_areas(self):
+        """Verify PRICE_AREAS contains exactly the expected set of area codes."""
+        from custom_components.norway_electricity.const import PRICE_AREAS
+
+        expected = {"NO1", "NO2", "NO3", "NO4", "NO5", "SE1", "SE2", "SE3", "SE4", "DK1", "DK2", "FI"}
+        assert set(PRICE_AREAS.keys()) == expected

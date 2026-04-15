@@ -15,10 +15,12 @@ from .const import (
     CONF_AREA,
     CONF_CHEAP_HOURS,
     CONF_EXPENSIVE_HOURS,
-    CONF_PRICE_THRESHOLD,
+    CONF_HIGH_THRESHOLD,
+    CONF_LOW_THRESHOLD,
     DEFAULT_CHEAP_HOURS,
     DEFAULT_EXPENSIVE_HOURS,
-    DEFAULT_PRICE_THRESHOLD,
+    DEFAULT_HIGH_THRESHOLD,
+    DEFAULT_LOW_THRESHOLD,
     DOMAIN,
     PRICE_AREAS,
 )
@@ -188,23 +190,30 @@ class ExpensiveHoursBinarySensor(ElectricityBinarySensorBase):
 class PriceBelowThresholdBinarySensor(ElectricityBinarySensorBase):
     """Binary sensor that is ON when the current price is below the configured threshold."""
 
-    _attr_icon = "mdi:arrow-down-bold-circle"
+    _attr_icon = "mdi:trending-down"
 
     def __init__(self, coordinator: ElectricityPriceCoordinator, entry: ConfigEntry, area: str) -> None:
         super().__init__(coordinator, entry, area, "price_below_threshold", "Price Below Threshold")
 
     @property
-    def _threshold(self) -> float:
-        return self._entry.options.get(CONF_PRICE_THRESHOLD, DEFAULT_PRICE_THRESHOLD)
+    def _threshold(self) -> float | None:
+        return self._entry.options.get(CONF_LOW_THRESHOLD, DEFAULT_LOW_THRESHOLD)
+
+    @property
+    def available(self) -> bool:
+        return self._threshold is not None and super().available and self.data is not None
 
     @property
     def is_on(self) -> bool | None:
+        threshold = self._threshold
+        if threshold is None:
+            return None
         if not self.data:
             return None
         current = self.data.current_price()
         if not current:
             return None
-        return current["price"] < self._threshold
+        return current["price"] < threshold
 
     @property
     def extra_state_attributes(self) -> dict:
@@ -219,23 +228,30 @@ class PriceBelowThresholdBinarySensor(ElectricityBinarySensorBase):
 class PriceAboveThresholdBinarySensor(ElectricityBinarySensorBase):
     """Binary sensor that is ON when the current price is above the configured threshold."""
 
-    _attr_icon = "mdi:arrow-up-bold-circle"
+    _attr_icon = "mdi:trending-up"
 
     def __init__(self, coordinator: ElectricityPriceCoordinator, entry: ConfigEntry, area: str) -> None:
         super().__init__(coordinator, entry, area, "price_above_threshold", "Price Above Threshold")
 
     @property
-    def _threshold(self) -> float:
-        return self._entry.options.get(CONF_PRICE_THRESHOLD, DEFAULT_PRICE_THRESHOLD)
+    def _threshold(self) -> float | None:
+        return self._entry.options.get(CONF_HIGH_THRESHOLD, DEFAULT_HIGH_THRESHOLD)
+
+    @property
+    def available(self) -> bool:
+        return self._threshold is not None and super().available and self.data is not None
 
     @property
     def is_on(self) -> bool | None:
+        threshold = self._threshold
+        if threshold is None:
+            return None
         if not self.data:
             return None
         current = self.data.current_price()
         if not current:
             return None
-        return current["price"] > self._threshold
+        return current["price"] > threshold
 
     @property
     def extra_state_attributes(self) -> dict:

@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="custom_components/norway_electricity/brand/logo@2x.png" alt="Norway Electricity Prices" width="256">
+  <img src="custom_components/norway_electricity/brand/logo@2x.png" alt="Nordic Electricity Prices" width="256">
 </p>
 
-# Norway Electricity Prices — Home Assistant Integration
+# Nordic Electricity Prices — Home Assistant Integration
 
 [![HACS Validation](https://github.com/Kvikku/ElectricityPriceAddon/actions/workflows/hacs-validate.yaml/badge.svg)](https://github.com/Kvikku/ElectricityPriceAddon/actions/workflows/hacs-validate.yaml)
 [![GitHub Release](https://img.shields.io/github/v/release/Kvikku/ElectricityPriceAddon?sort=semver)](https://github.com/Kvikku/ElectricityPriceAddon/releases)
@@ -10,11 +10,11 @@
 [![HA Version](https://img.shields.io/badge/Home%20Assistant-2024.1%2B-blue)](https://www.home-assistant.io/)
 [![HACS](https://img.shields.io/badge/HACS-Custom-orange)](https://hacs.xyz/)
 
-A custom Home Assistant integration that fetches real-time Norwegian
+A custom Home Assistant integration that fetches real-time Nordic
 electricity spot prices from
 [hvakosterstrommen.no](https://www.hvakosterstrommen.no/) and provides
-sensors, price level indicators, and smart automation helpers for each of the
-five Norwegian price areas (NO1–NO5).
+sensors, price level indicators, and smart automation helpers for all
+Nordpool bidding zones (Norway, Sweden, Denmark, and Finland).
 
 ---
 
@@ -44,13 +44,15 @@ five Norwegian price areas (NO1–NO5).
 | ⚡ **Current hour price** | Real-time NOK/kWh with EUR price as attribute |
 | ⏭️ **Next hour price** | Plan ahead with upcoming hour's price |
 | 📊 **Daily statistics** | Average, min, and max prices with timestamps |
+| 📅 **Tomorrow's preview** | Separate sensors for tomorrow's average, min, and max (available ~13:00 CET) |
 | 🏷️ **Price level** | Categorical indicator: `very_cheap` → `very_expensive` |
 | 💚 **Cheapest hours** | Binary sensor ON during the N cheapest hours today |
 | 🔴 **Expensive hours** | Binary sensor ON during the N most expensive hours |
+| 🔔 **Price threshold alerts** | Binary sensors ON when price drops below or rises above a custom threshold |
 | 🔋 **Best charging window** | Finds the cheapest consecutive block of N hours (ideal for EV charging) |
-| 📅 **Tomorrow's prices** | Fetched automatically once available (~13:00 CET), with HA event fired |
 | 🧾 **VAT toggle** | Include or exclude 25% MVA in integration options |
 | 🗺️ **Multi-area** | Add the integration multiple times for different price areas |
+| 🌍 **Nordic coverage** | All Nordpool zones: Norway (NO1–NO5), Sweden (SE1–SE4), Denmark (DK1–DK2), Finland (FI) |
 | ✅ **HACS compatible** | Easy install and updates through HACS |
 
 ---
@@ -84,8 +86,10 @@ five Norwegian price areas (NO1–NO5).
 ### Initial Setup
 
 1. Go to **Settings** → **Devices & Services** → **Add Integration**.
-2. Search for **Norway Electricity Prices**.
+2. Search for **Nordic Electricity Prices**.
 3. Select your price area:
+
+   **Norway**
 
    | Code | Region |
    |------|--------|
@@ -94,6 +98,28 @@ five Norwegian price areas (NO1–NO5).
    | **NO3** | Trondheim / Midt-Norge |
    | **NO4** | Tromsø / Nord-Norge |
    | **NO5** | Bergen / Vest-Norge |
+
+   **Sweden**
+
+   | Code | Region |
+   |------|--------|
+   | **SE1** | Luleå / Norra Sverige |
+   | **SE2** | Sundsvall / Mellersta Nord Sverige |
+   | **SE3** | Stockholm / Mellersta Syd Sverige |
+   | **SE4** | Malmö / Södra Sverige |
+
+   **Denmark**
+
+   | Code | Region |
+   |------|--------|
+   | **DK1** | Jylland / Fyn (Vest-Danmark) |
+   | **DK2** | Sjælland (Øst-Danmark) |
+
+   **Finland**
+
+   | Code | Region |
+   |------|--------|
+   | **FI** | Finland |
 
 4. Done! Sensors will appear automatically.
 
@@ -109,27 +135,31 @@ After adding the integration, click **Configure** to adjust:
 | Include VAT (25%) | ✅ On | — | Add 25% MVA to spot prices |
 | Cheapest hours | 6 | 1–12 | Number of hours considered "cheap" |
 | Most expensive hours | 6 | 1–12 | Number of hours considered "expensive" |
-| Price threshold | 1.0 | 0–50 | NOK/kWh limit for threshold binary sensors |
+| Price below threshold | — | float | Alert when price drops below this value (NOK/kWh); leave empty to disable |
+| Price above threshold | — | float | Alert when price rises above this value (NOK/kWh); leave empty to disable |
 
 ---
 
 ## Sensors & Entities
 
-Each price area creates **10 entities**. Replace `{area}` with the
-**lowercase** area code: `no1`, `no2`, `no3`, `no4`, or `no5`.
+Each price area creates **13 entities**. Replace `{area}` with the
+**lowercase** area code (e.g., `no1`, `se3`, `fi`).
 
 | Entity | Type | State | Key Attributes |
 |--------|------|-------|----------------|
-| `sensor.electricity_price_no5` | Sensor | Current NOK/kWh | `price_eur`, `hour`, `raw_today`, `raw_tomorrow` |
-| `sensor.next_hour_price_no5` | Sensor | Next hour NOK/kWh | `price_eur`, `hour` |
-| `sensor.average_price_no5` | Sensor | Today's average | — |
-| `sensor.min_price_no5` | Sensor | Today's lowest | `hour` of cheapest |
-| `sensor.max_price_no5` | Sensor | Today's highest | `hour` of most expensive |
-| `sensor.price_level_no5` | Sensor | Category string | — |
-| `binary_sensor.cheapest_hours_no5` | Binary | ON if cheap now | `cheapest_hours`, `best_consecutive_window`, `best_consecutive_window_tomorrow` |
-| `binary_sensor.expensive_hours_no5` | Binary | ON if expensive now | `expensive_hours` |
-| `binary_sensor.price_below_threshold_no5` | Binary | ON if below threshold | `threshold`, `current_price` |
-| `binary_sensor.price_above_threshold_no5` | Binary | ON if above threshold | `threshold`, `current_price` |
+| `sensor.electricity_price_{area}` | Sensor | Current NOK/kWh | `price_eur`, `hour`, `raw_today`, `raw_tomorrow` |
+| `sensor.next_hour_price_{area}` | Sensor | Next hour NOK/kWh | `price_eur`, `hour` |
+| `sensor.average_price_{area}` | Sensor | Today's average | — |
+| `sensor.min_price_{area}` | Sensor | Today's lowest | `hour` of cheapest |
+| `sensor.max_price_{area}` | Sensor | Today's highest | `hour` of most expensive |
+| `sensor.price_level_{area}` | Sensor | Category string | — |
+| `sensor.tomorrow_average_price_{area}` | Sensor | Tomorrow's average (or unavailable) | `raw_tomorrow` |
+| `sensor.tomorrow_min_price_{area}` | Sensor | Tomorrow's lowest (or unavailable) | `hour`, `start` |
+| `sensor.tomorrow_max_price_{area}` | Sensor | Tomorrow's highest (or unavailable) | `hour`, `start` |
+| `binary_sensor.cheapest_hours_{area}` | Binary | ON if cheap now | `cheapest_hours`, `best_consecutive_window` |
+| `binary_sensor.expensive_hours_{area}` | Binary | ON if expensive now | `expensive_hours` |
+| `binary_sensor.price_below_threshold_{area}` | Binary | ON if price < threshold | `threshold`, `current_price` |
+| `binary_sensor.price_above_threshold_{area}` | Binary | ON if price > threshold | `threshold`, `current_price` |
 
 📖 **Full details:** [Sensor Reference](docs/sensors.md)
 

@@ -209,76 +209,144 @@ class TestBinarySensorDeviceInfo:
 
 
 class TestPriceBelowThresholdBinarySensor:
-    def test_is_on_when_below_threshold(self, coordinator, price_data):
-        entry = _make_entry(price_threshold=0.20)
+    def _make_entry_with_threshold(self, low: float | None = None, high: float | None = None) -> MagicMock:
+        entry = MagicMock()
+        entry.options = {"low_price_threshold": low, "high_price_threshold": high}
+        return entry
+
+    def test_is_on_when_price_below_threshold(self, coordinator, price_data):
+        # Hour 4 has price 0.05 — set threshold at 0.10 → should be ON
+        entry = self._make_entry_with_threshold(low=0.10)
         sensor = PriceBelowThresholdBinarySensor(coordinator, entry, "NO1")
-        # Hour 4 (0.05) is below 0.20
         fixed_now = datetime.fromisoformat("2026-03-20T04:30:00+01:00")
         with patch("custom_components.norway_electricity.coordinator.dt_util") as mock_dt:
             mock_dt.now.return_value = fixed_now
             assert sensor.is_on is True
 
-    def test_is_off_when_above_threshold(self, coordinator, price_data):
-        entry = _make_entry(price_threshold=0.20)
+    def test_is_off_when_price_above_threshold(self, coordinator):
+        # Hour 19 has price 0.60 — set threshold at 0.10 → should be OFF
+        entry = self._make_entry_with_threshold(low=0.10)
         sensor = PriceBelowThresholdBinarySensor(coordinator, entry, "NO1")
-        # Hour 19 (0.60) is above 0.20
         fixed_now = datetime.fromisoformat("2026-03-20T19:30:00+01:00")
         with patch("custom_components.norway_electricity.coordinator.dt_util") as mock_dt:
             mock_dt.now.return_value = fixed_now
             assert sensor.is_on is False
 
+    def test_is_on_none_when_threshold_not_set(self, coordinator):
+        entry = self._make_entry_with_threshold(low=None)
+        sensor = PriceBelowThresholdBinarySensor(coordinator, entry, "NO1")
+        assert sensor.is_on is None
+
     def test_is_on_none_when_no_data(self):
         coord = _make_coordinator(None)
-        entry = _make_entry(price_threshold=0.20)
+        entry = self._make_entry_with_threshold(low=0.50)
         sensor = PriceBelowThresholdBinarySensor(coord, entry, "NO1")
         assert sensor.is_on is None
 
-    def test_extra_state_attributes_has_threshold(self, coordinator):
-        entry = _make_entry(price_threshold=0.50)
+    def test_not_available_when_threshold_not_set(self, coordinator):
+        entry = self._make_entry_with_threshold(low=None)
+        sensor = PriceBelowThresholdBinarySensor(coordinator, entry, "NO1")
+        assert sensor.available is False
+
+    def test_not_available_when_no_data(self):
+        coord = _make_coordinator(None)
+        entry = self._make_entry_with_threshold(low=0.50)
+        sensor = PriceBelowThresholdBinarySensor(coord, entry, "NO1")
+        assert sensor.available is False
+
+    def test_available_when_threshold_set_and_data_present(self, coordinator):
+        entry = self._make_entry_with_threshold(low=0.50)
+        sensor = PriceBelowThresholdBinarySensor(coordinator, entry, "NO1")
+        assert sensor.available is True
+
+    def test_extra_state_attributes_contains_threshold(self, coordinator):
+        entry = self._make_entry_with_threshold(low=0.30)
         sensor = PriceBelowThresholdBinarySensor(coordinator, entry, "NO1")
         attrs = sensor.extra_state_attributes
-        assert "threshold" in attrs
-        assert attrs["threshold"] == 0.50
+        assert attrs["threshold"] == 0.30
 
-    def test_unique_id(self, coordinator):
-        entry = _make_entry()
+    def test_extra_state_attributes_contains_current_price(self, coordinator, price_data):
+        entry = self._make_entry_with_threshold(low=0.30)
+        sensor = PriceBelowThresholdBinarySensor(coordinator, entry, "NO1")
+        fixed_now = datetime.fromisoformat("2026-03-20T04:30:00+01:00")
+        with patch("custom_components.norway_electricity.coordinator.dt_util") as mock_dt:
+            mock_dt.now.return_value = fixed_now
+            attrs = sensor.extra_state_attributes
+        assert "current_price" in attrs
+        assert attrs["current_price"] == 0.05
+
+    def test_unique_id(self, coordinator, entry):
         sensor = PriceBelowThresholdBinarySensor(coordinator, entry, "NO1")
         assert sensor._attr_unique_id == "norway_electricity_NO1_price_below_threshold"
 
 
 class TestPriceAboveThresholdBinarySensor:
-    def test_is_on_when_above_threshold(self, coordinator, price_data):
-        entry = _make_entry(price_threshold=0.20)
+    def _make_entry_with_threshold(self, high: float | None = None) -> MagicMock:
+        entry = MagicMock()
+        entry.options = {"low_price_threshold": None, "high_price_threshold": high}
+        return entry
+
+    def test_is_on_when_price_above_threshold(self, coordinator, price_data):
+        # Hour 19 has price 0.60 — set threshold at 0.50 → should be ON
+        entry = self._make_entry_with_threshold(high=0.50)
         sensor = PriceAboveThresholdBinarySensor(coordinator, entry, "NO1")
-        # Hour 19 (0.60) is above 0.20
         fixed_now = datetime.fromisoformat("2026-03-20T19:30:00+01:00")
         with patch("custom_components.norway_electricity.coordinator.dt_util") as mock_dt:
             mock_dt.now.return_value = fixed_now
             assert sensor.is_on is True
 
-    def test_is_off_when_below_threshold(self, coordinator, price_data):
-        entry = _make_entry(price_threshold=0.20)
+    def test_is_off_when_price_below_threshold(self, coordinator):
+        # Hour 4 has price 0.05 — set threshold at 0.50 → should be OFF
+        entry = self._make_entry_with_threshold(high=0.50)
         sensor = PriceAboveThresholdBinarySensor(coordinator, entry, "NO1")
-        # Hour 4 (0.05) is below 0.20
         fixed_now = datetime.fromisoformat("2026-03-20T04:30:00+01:00")
         with patch("custom_components.norway_electricity.coordinator.dt_util") as mock_dt:
             mock_dt.now.return_value = fixed_now
             assert sensor.is_on is False
 
+    def test_is_on_none_when_threshold_not_set(self, coordinator):
+        entry = self._make_entry_with_threshold(high=None)
+        sensor = PriceAboveThresholdBinarySensor(coordinator, entry, "NO1")
+        assert sensor.is_on is None
+
     def test_is_on_none_when_no_data(self):
         coord = _make_coordinator(None)
-        entry = _make_entry(price_threshold=0.20)
+        entry = self._make_entry_with_threshold(high=0.50)
         sensor = PriceAboveThresholdBinarySensor(coord, entry, "NO1")
         assert sensor.is_on is None
 
-    def test_extra_state_attributes_has_threshold(self, coordinator):
-        entry = _make_entry(price_threshold=0.50)
+    def test_not_available_when_threshold_not_set(self, coordinator):
+        entry = self._make_entry_with_threshold(high=None)
+        sensor = PriceAboveThresholdBinarySensor(coordinator, entry, "NO1")
+        assert sensor.available is False
+
+    def test_not_available_when_no_data(self):
+        coord = _make_coordinator(None)
+        entry = self._make_entry_with_threshold(high=0.50)
+        sensor = PriceAboveThresholdBinarySensor(coord, entry, "NO1")
+        assert sensor.available is False
+
+    def test_available_when_threshold_set_and_data_present(self, coordinator):
+        entry = self._make_entry_with_threshold(high=0.50)
+        sensor = PriceAboveThresholdBinarySensor(coordinator, entry, "NO1")
+        assert sensor.available is True
+
+    def test_extra_state_attributes_contains_threshold(self, coordinator):
+        entry = self._make_entry_with_threshold(high=0.80)
         sensor = PriceAboveThresholdBinarySensor(coordinator, entry, "NO1")
         attrs = sensor.extra_state_attributes
-        assert "threshold" in attrs
-        assert attrs["threshold"] == 0.50
+        assert attrs["threshold"] == 0.80
 
-    def test_unique_id(self, coordinator):
-        entry = _make_entry()
+    def test_extra_state_attributes_contains_current_price(self, coordinator, price_data):
+        entry = self._make_entry_with_threshold(high=0.30)
+        sensor = PriceAboveThresholdBinarySensor(coordinator, entry, "NO1")
+        fixed_now = datetime.fromisoformat("2026-03-20T19:30:00+01:00")
+        with patch("custom_components.norway_electricity.coordinator.dt_util") as mock_dt:
+            mock_dt.now.return_value = fixed_now
+            attrs = sensor.extra_state_attributes
+        assert "current_price" in attrs
+        assert attrs["current_price"] == 0.60
+
+    def test_unique_id(self, coordinator, entry):
         sensor = PriceAboveThresholdBinarySensor(coordinator, entry, "NO1")
         assert sensor._attr_unique_id == "norway_electricity_NO1_price_above_threshold"

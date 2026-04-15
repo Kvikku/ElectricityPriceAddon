@@ -35,6 +35,9 @@ async def async_setup_entry(
         MinPriceSensor(coordinator, area),
         MaxPriceSensor(coordinator, area),
         PriceLevelSensor(coordinator, area),
+        TomorrowAveragePriceSensor(coordinator, area),
+        TomorrowMinPriceSensor(coordinator, area),
+        TomorrowMaxPriceSensor(coordinator, area),
     ]
 
     async_add_entities(sensors, update_before_add=True)
@@ -323,4 +326,106 @@ class PriceLevelSensor(ElectricityPriceSensorBase):
             return {}
         return {
             "levels": "very_cheap, cheap, normal, expensive, very_expensive",
+        }
+
+
+class TomorrowAveragePriceSensor(ElectricityPriceSensorBase):
+    """Sensor showing tomorrow's average electricity price."""
+
+    _attr_device_class = SensorDeviceClass.MONETARY
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_native_unit_of_measurement = CURRENCY_NOK
+    _attr_suggested_display_precision = 2
+    _attr_icon = "mdi:chart-line"
+
+    def __init__(self, coordinator: ElectricityPriceCoordinator, area: str) -> None:
+        super().__init__(coordinator, area, "tomorrow_average_price", "Tomorrow Average Price")
+
+    @property
+    def available(self) -> bool:
+        return super().available and self.data is not None and self.data.tomorrow is not None
+
+    @property
+    def native_value(self) -> float | None:
+        if not self.data or not self.data.tomorrow:
+            return None
+        return round(self.data.average_price(self.data.tomorrow), 4)
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        raw = self._raw_tomorrow_attr()
+        if raw is None:
+            return {}
+        return {"raw_tomorrow": raw}
+
+
+class TomorrowMinPriceSensor(ElectricityPriceSensorBase):
+    """Sensor showing tomorrow's lowest electricity price."""
+
+    _attr_device_class = SensorDeviceClass.MONETARY
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_native_unit_of_measurement = CURRENCY_NOK
+    _attr_suggested_display_precision = 2
+    _attr_icon = "mdi:arrow-down-bold"
+
+    def __init__(self, coordinator: ElectricityPriceCoordinator, area: str) -> None:
+        super().__init__(coordinator, area, "tomorrow_min_price", "Tomorrow Min Price")
+
+    @property
+    def available(self) -> bool:
+        return super().available and self.data is not None and self.data.tomorrow is not None
+
+    @property
+    def native_value(self) -> float | None:
+        if not self.data or not self.data.tomorrow:
+            return None
+        entry = self.data.min_entry(self.data.tomorrow)
+        return entry["price"] if entry else None
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        if not self.data or not self.data.tomorrow:
+            return {}
+        entry = self.data.min_entry(self.data.tomorrow)
+        if not entry:
+            return {}
+        return {
+            "hour": entry["hour"],
+            "start": entry["start"].isoformat(),
+        }
+
+
+class TomorrowMaxPriceSensor(ElectricityPriceSensorBase):
+    """Sensor showing tomorrow's highest electricity price."""
+
+    _attr_device_class = SensorDeviceClass.MONETARY
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_native_unit_of_measurement = CURRENCY_NOK
+    _attr_suggested_display_precision = 2
+    _attr_icon = "mdi:arrow-up-bold"
+
+    def __init__(self, coordinator: ElectricityPriceCoordinator, area: str) -> None:
+        super().__init__(coordinator, area, "tomorrow_max_price", "Tomorrow Max Price")
+
+    @property
+    def available(self) -> bool:
+        return super().available and self.data is not None and self.data.tomorrow is not None
+
+    @property
+    def native_value(self) -> float | None:
+        if not self.data or not self.data.tomorrow:
+            return None
+        entry = self.data.max_entry(self.data.tomorrow)
+        return entry["price"] if entry else None
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        if not self.data or not self.data.tomorrow:
+            return {}
+        entry = self.data.max_entry(self.data.tomorrow)
+        if not entry:
+            return {}
+        return {
+            "hour": entry["hour"],
+            "start": entry["start"].isoformat(),
         }

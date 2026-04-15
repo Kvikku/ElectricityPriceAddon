@@ -1,6 +1,6 @@
 {
   "domain": "norway_electricity",
-  "name": "Norway Electricity Prices",
+  "name": "Nordic Electricity Prices",
   "codeowners": ["@Kvikku"],
   "config_flow": true,
   "dependencies": [],

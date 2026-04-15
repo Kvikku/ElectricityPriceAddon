@@ -12,11 +12,13 @@ from .const import (
     CONF_AREA,
     CONF_CHEAP_HOURS,
     CONF_EXPENSIVE_HOURS,
-    CONF_PRICE_THRESHOLD,
+    CONF_HIGH_THRESHOLD,
+    CONF_LOW_THRESHOLD,
     CONF_VAT,
     DEFAULT_CHEAP_HOURS,
     DEFAULT_EXPENSIVE_HOURS,
-    DEFAULT_PRICE_THRESHOLD,
+    DEFAULT_HIGH_THRESHOLD,
+    DEFAULT_LOW_THRESHOLD,
     DEFAULT_VAT,
     DOMAIN,
     PRICE_AREAS,
@@ -95,10 +97,14 @@ class NorwayElectricityOptionsFlow(OptionsFlow):
                         CONF_EXPENSIVE_HOURS,
                         default=current.get(CONF_EXPENSIVE_HOURS, DEFAULT_EXPENSIVE_HOURS),
                     ): vol.All(vol.Coerce(int), vol.Range(min=1, max=12)),
-                    vol.Required(
-                        CONF_PRICE_THRESHOLD,
-                        default=current.get(CONF_PRICE_THRESHOLD, DEFAULT_PRICE_THRESHOLD),
-                    ): vol.All(vol.Coerce(float), vol.Range(min=0.0, max=50.0)),
+                    vol.Optional(
+                        CONF_LOW_THRESHOLD,
+                        default=current.get(CONF_LOW_THRESHOLD, DEFAULT_LOW_THRESHOLD),
+                    ): vol.Any(None, vol.Coerce(float)),
+                    vol.Optional(
+                        CONF_HIGH_THRESHOLD,
+                        default=current.get(CONF_HIGH_THRESHOLD, DEFAULT_HIGH_THRESHOLD),
+                    ): vol.Any(None, vol.Coerce(float)),
                 }
             ),
         )

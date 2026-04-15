@@ -2,8 +2,8 @@
   "config": {
     "step": {
       "user": {
-        "title": "Set up Norway Electricity Prices",
-        "description": "Select your electricity price area.",
+        "title": "Set up Nordic Electricity Prices",
+        "description": "Select your electricity price area (Norway, Sweden, Denmark, or Finland).",
         "data": {
           "price_area": "Price area"
         }
@@ -21,7 +21,8 @@
           "vat": "Include VAT (25%)",
           "cheap_hours": "Number of cheapest hours",
           "expensive_hours": "Number of most expensive hours",
-          "price_threshold": "Price threshold (NOK/kWh)"
+          "low_price_threshold": "Price below threshold (NOK/kWh, leave empty to disable)",
+          "high_price_threshold": "Price above threshold (NOK/kWh, leave empty to disable)"
         }
       }
     }
